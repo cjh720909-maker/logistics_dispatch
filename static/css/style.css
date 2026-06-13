@@ -1,0 +1,25 @@
+.dispatch-table td {
+    border-top: none;
+    border-bottom: none;
+    border-left: 1px solid #cccccc;
+    border-right: 1px solid #cccccc;
+}
+
+.dispatch-table th {
+    border-left: 1px solid #cccccc;
+    border-right: 1px solid #cccccc;
+}
+
+.vehicle-start-row td {
+    border-top: 3px solid #333333 !important;
+}
+
+.load-rate-red {
+    color: red;
+    font-weight: bold;
+}
+
+.load-rate-blue {
+    color: blue;
+    font-weight: bold;
+}

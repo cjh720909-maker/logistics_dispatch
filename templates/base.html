@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <title>물류 배차 지원 시스템 V1</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-size: 14px;
+        }
+
+        .top-menu {
+            background-color: #eeeeee;
+            border-bottom: 1px solid #cccccc;
+            padding: 6px 12px;
+        }
+
+        .screen-box {
+            background-color: white;
+            border: 1px solid #cccccc;
+            padding: 10px;
+            margin-top: 10px;
+        }
+
+        table {
+            font-size: 13px;
+        }
+
+        th {
+            background-color: #111111 !important;
+            color: white !important;
+            text-align: center;
+        }
+
+        td {
+            vertical-align: middle;
+        }
+
+        .selected-row {
+            background-color: yellow;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="top-menu">
+        <strong>물류 배차 지원 시스템 V1</strong>
+        <span class="ms-4">100 기초코드관리</span>
+        <span class="ms-3">200 배차관리</span>
+        <span class="ms-3">300 출력을리스트</span>
+        <span class="ms-3">400 입출고관리</span>
+        <span class="ms-3">500 피박스관리</span>
+    </div>
+
+    <div class="container-fluid">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+</body>
+
+</html>

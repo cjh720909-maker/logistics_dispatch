@@ -1,0 +1,12 @@
+.dispatch-table-wrap {
+    max-height: 650px;
+    overflow-y: auto;
+}
+
+.summary-row {
+    position: sticky;
+    bottom: 0;
+    background-color: #eaf2ff;
+    font-weight: bold;
+    z-index: 2;
+}

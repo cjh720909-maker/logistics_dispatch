@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="screen-box">
+
+    <div class="row mb-3">
+        <form method="get" action="/dispatch" class="row mb-3">
+            <div class="col-md-3">
+                <label class="form-label">납품 요청일</label>
+                <input type="date" name="date" class="form-control" value="{{ selected_date }}">
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-dark w-100">조회</button>
+            </div>
+        </form>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <div class="alert alert-secondary mb-0">
+                전체 총중량:
+                <strong>{{ dispatch_total.total_kg }}</strong> kg
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="alert alert-secondary mb-0">
+                전체 적재량:
+                <strong>{{ dispatch_total.total_capacity_kg }}</strong> kg
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="alert alert-secondary mb-0">
+                전체 적재율:
+                <strong>{{ dispatch_total.total_load_rate }}</strong> %
+            </div>
+        </div>
+    </div>
+    <div class="row">
+
+        <!-- 좌측 차량/기사 목록 -->
+        <div class="col-md-5">
+            <h6>차량 / 기사 목록</h6>
+
+            <table class="table table-bordered table-sm">
+                <thead>
+                    <tr>
+                        <th>권역</th>
+                        <th>기사명</th>
+                        <th>배차명</th>
+                        <th>DOCK번호</th>
+                        <th>김류</th>
+                        <th>냉동</th>
+                        <th>콩나물</th>
+                        <th>순중량</th>
+                        <th>총중량</th>
+                        <th>적재량</th>
+                        <th>적재율</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in dispatch_list %}
+                    <tr onclick="location.href='/dispatch?date={{ selected_date }}&vehicle_key={{ row.vehicle_key }}'"
+                        class="{% if selected_vehicle_key == row.vehicle_key %}selected-row{% endif %}"
+                        style="cursor: pointer;">
+                        <td>{{ row.CA_GUN }}</td>
+                        <td>{{ row.CA_NAME }}</td>
+                        <td>{{ row.CB_DRIVER }}</td>
+                        <td>{{ row.CA_DOCKNO }}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{{ row.net_kg }}</td>
+                        <td>
+                            {% if row.show_vehicle_total %}
+                            {{ row.total_kg }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.show_vehicle_total %}
+                            {{ row.capacity_kg }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if row.show_vehicle_total %}
+                            {{ row.load_rate }}%
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tr class="summary-row">
+                    <td colspan="7">합계</td>
+                    <td>{{ dispatch_total.net_kg }}</td>
+                    <td>{{ dispatch_total.total_kg }}</td>
+                    <td>{{ dispatch_total.total_capacity_kg }}</td>
+                    <td>{{ dispatch_total.total_load_rate }}%</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- 우측 거래처 목록 -->
+        <div class="col-md-7">
+            <h6>선택 차량 거래처 목록</h6>
+
+            <table class="table table-bordered table-sm">
+                <thead>
+                    <tr>
+                        <th>선택</th>
+                        <th>거래처</th>
+                        <th>김류</th>
+                        <th>냉동</th>
+                        <th>콩나물</th>
+                        <th>순중량</th>
+                        <th>주소</th>
+                        <th>공유차량</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for customer in customers %}
+                    <tr>
+                        <td><input type="checkbox"></td>
+                        <td>{{ customer.B_C_NAME }}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>{{ customer.total_kg }}</td>
+                        <td>{{ customer.CB_ADDRESS }}</td>
+                        <td>{{ customer.item_count }}건</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

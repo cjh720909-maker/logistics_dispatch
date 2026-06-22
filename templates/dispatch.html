@@ -93,11 +93,13 @@
                             <th>순중량</th>
                             <th>주소</th>
                             <th>공유차량</th>
+                            <th>특이사항</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for customer in customers %}
-                        <tr>
+                        <tr class="customer-row" data-customer-name="{{ customer.B_C_NAME }}"
+                            data-customer-address="{{ customer.CB_ADDRESS }}">
                             <td><input type="checkbox"></td>
                             <td>{{ customer.B_C_NAME }}</td>
                             <td></td>
@@ -105,7 +107,8 @@
                             <td></td>
                             <td>{{ customer.total_kg }}</td>
                             <td>{{ customer.CB_ADDRESS }}</td>
-                            <td>{{ customer.item_count }}건</td>
+                            <td>{{ customer.CB_GONG }}</td>
+                            <td>{{ customer.CB_MEMO }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -115,4 +118,83 @@
     </div>
 
 </div>
+<div class="modal fade" id="orderDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderDetailTitle">주문내용</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <table class="table table-bordered table-sm">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>납품요청일</th>
+                            <th>판매처</th>
+                            <th>자재번호</th>
+                            <th>자재명</th>
+                            <th>기초분류</th>
+                            <th>입수</th>
+                            <th>낱개수량</th>
+                            <th>순중량</th>
+                            <th>오더번호</th>
+                            <th>납품번호</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderDetailBody"></tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll(".customer-row").forEach(function (row) {
+        row.addEventListener("dblclick", function () {
+            const selectedDate = document.querySelector("input[name='date']").value;
+            const driver = "{{ selected_driver }}";
+            const customerName = this.dataset.customerName;
+            const customerAddress = this.dataset.customerAddress;
+
+            fetch(`/api/customer-orders?date=${encodeURIComponent(selectedDate)}&driver=${encodeURIComponent(driver)}&customer_name=${encodeURIComponent(customerName)}&customer_address=${encodeURIComponent(customerAddress)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById("orderDetailBody");
+                    tbody.innerHTML = "";
+
+                    data.forEach(function (order, index) {
+                        const tr = document.createElement("tr");
+
+                        tr.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${order.B_DATE || ""}</td>
+                        <td>${order.B_C_NAME || ""}</td>
+                        <td>${order.B_P_NO || ""}</td>
+                        <td>${order.B_P_NAME || ""}</td>
+                        <td>${order.P_DIV_BAS || ""}</td>
+                        <td>${order.B_IN_QTY || ""}</td>
+                        <td>${order.piece_qty || ""}</td>
+                        <td>${order.B_KG || ""}</td>
+                        <td>${order.B_ORDER_NO || ""}</td>
+                        <td>${order.B_NAP_NO || ""}</td>
+                    `;
+
+                        tbody.appendChild(tr);
+                    });
+
+                    document.getElementById("orderDetailTitle").innerText =
+                        customerAddress + " (" + customerName + ")";
+
+                    const modal = new bootstrap.Modal(
+                        document.getElementById("orderDetailModal")
+                    );
+                    modal.show();
+                });
+        });
+    });
+</script>
 {% endblock %}

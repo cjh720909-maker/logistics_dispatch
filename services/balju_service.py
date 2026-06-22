@@ -170,22 +170,26 @@ def get_customer_list_by_driver(selected_date, driver):
         result = conn.exec_driver_sql(
             """
             SELECT
-                b.B_C_CODE,
+                MAX(b.B_C_CODE) AS B_C_CODE,
                 b.B_C_NAME,
-                b.B_C_PAN_NAME,
+                MAX(b.B_C_PAN_NAME) AS B_C_PAN_NAME,
                 b.CB_ADDRESS,
+                MAX(c.CB_GONG) AS CB_GONG,
+                MAX(c.CB_MEMO) AS CB_MEMO,
                 COUNT(*) AS item_count,
                 SUM(b.B_QTY) AS total_qty,
-                SUM(b.B_KG) AS total_kg
+                CEIL(SUM(b.B_KG)) AS total_kg
             FROM t_balju b
+            LEFT JOIN t_cust_bae c
+                ON b.CB_IDX = c.CB_IDX
             WHERE b.B_DATE = %s
               AND b.CB_DRIVER = %s
             GROUP BY
-                b.B_C_CODE,
                 b.B_C_NAME,
-                b.B_C_PAN_NAME,
                 b.CB_ADDRESS
-            ORDER BY b.B_C_NAME
+            ORDER BY
+                b.CB_ADDRESS,
+                b.B_C_NAME
             """,
             (selected_date, raw_driver)
         )
@@ -349,3 +353,50 @@ def get_product_map():
                 product_map[p_code] = product_info
 
     return product_map
+
+def get_customer_orders(selected_date, driver, customer_name, customer_address):
+    if not selected_date or not driver or not customer_name:
+        return []
+
+    raw_driver = driver.encode("cp949").decode("latin1")
+    raw_customer_name = customer_name.encode("cp949").decode("latin1")
+    raw_customer_address = customer_address.encode("cp949").decode("latin1")
+
+    with engine.connect() as conn:
+        result = conn.exec_driver_sql(
+            """
+            SELECT
+                b.B_DATE,
+                b.B_C_NAME,
+                b.B_P_NO,
+                b.B_P_NAME,
+                b.B_QTY,
+                b.B_KG,
+                b.B_NAP_NO,
+                b.B_ORDER_NO,
+                p.P_DIV_BAS,
+                ROUND(b.B_IN_QTY, 0) AS B_IN_QTY,
+                b.B_QTY AS piece_qty
+            FROM t_balju b
+            LEFT JOIN t_product p
+                ON b.B_P_NO = p.P_CODE
+            WHERE b.B_DATE = %s
+            AND b.CB_DRIVER = %s
+            AND b.B_C_NAME = %s
+            AND b.CB_ADDRESS = %s
+            ORDER BY p.P_DIV_BAS, b.B_P_NAME
+            """,
+            (
+                selected_date,
+                raw_driver,
+                raw_customer_name,
+                raw_customer_address,
+            )
+        )
+
+        rows = result.mappings().all()
+
+        return [
+            fix_row(dict(row))
+            for row in rows
+        ]

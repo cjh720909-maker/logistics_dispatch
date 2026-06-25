@@ -165,6 +165,9 @@ def get_customer_list_by_driver(selected_date, driver):
         return []
 
     raw_driver = driver.encode("cp949").decode("latin1")
+    raw_kim = "김류".encode("cp949").decode("latin1")
+    raw_frozen = "냉동".encode("cp949").decode("latin1")
+    raw_sprout = "콩나물".encode("cp949").decode("latin1")
 
     with engine.connect() as conn:
         result = conn.exec_driver_sql(
@@ -176,22 +179,52 @@ def get_customer_list_by_driver(selected_date, driver):
                 b.CB_ADDRESS,
                 MAX(c.CB_GONG) AS CB_GONG,
                 MAX(c.CB_MEMO) AS CB_MEMO,
+
+                SUM(
+                    CASE
+                        WHEN p.P_DIV_BAS = %s
+                        THEN CEIL(
+                            b.B_QTY / NULLIF(b.B_IN_QTY, 0)
+                        )
+                        ELSE 0
+                    END
+                ) AS kim_qty,
+                SUM(
+                    CASE
+                        WHEN p.P_DIV_BAS = %s
+                        THEN CEIL(
+                            b.B_QTY / NULLIF(b.B_IN_QTY, 0)
+                        )
+                        ELSE 0
+                    END
+                ) AS frozen_qty,
+                SUM(
+                    CASE
+                        WHEN p.P_DIV_BAS = %s
+                        THEN CEIL(
+                            b.B_QTY / NULLIF(b.B_IN_QTY, 0)
+                        )
+                        ELSE 0
+                    END
+                ) AS sprout_qty,
                 COUNT(*) AS item_count,
                 SUM(b.B_QTY) AS total_qty,
                 CEIL(SUM(b.B_KG)) AS total_kg
             FROM t_balju b
             LEFT JOIN t_cust_bae c
                 ON b.CB_IDX = c.CB_IDX
+            LEFT JOIN t_product p
+                ON b.B_P_NO = p.P_CODE
             WHERE b.B_DATE = %s
-              AND b.CB_DRIVER = %s
+            AND b.CB_DRIVER = %s
             GROUP BY
                 b.B_C_NAME,
                 b.CB_ADDRESS
             ORDER BY
                 b.CB_ADDRESS,
                 b.B_C_NAME
-            """,
-            (selected_date, raw_driver)
+                """,
+            (raw_kim, raw_frozen, raw_sprout, selected_date, raw_driver)
         )
 
         rows = result.mappings().all()

@@ -1,3 +1,16 @@
 cd ~/logistics_dispatch_v1
 source venv/bin/activate
 python app.py
+
+
+cd logistics_dispatch_v1
+
+python3 -m venv venv
+source venv/bin/activate
+
+pip install flask python-dotenv
+
+https://github.com/cjh720909-maker/logistics_dispatch.git
+
+
+B_NAP_NO	B_ORDER_NO

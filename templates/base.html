@@ -13,15 +13,18 @@
 
 <body>
 
-    <div class="top-menu">
-        <strong>물류 배차 지원 시스템 V1</strong>
-        <span class="ms-4">100 기초코드관리</span>
-        <span class="ms-3">200 배차관리</span>
-        <span class="ms-3">300 출력을리스트</span>
-        <span class="ms-3">400 입출고관리</span>
-        <span class="ms-3">500 피박스관리</span>
-    </div>
+    <nav class="top-menu">
+        <a href="/dispatch">220 배차조정</a>
 
+        <div class="dropdown-menu-box">
+            <span>300 출력물리스트</span>
+            <div class="dropdown-content">
+                <a href="/320-invoice">320 거래명세서</a>
+                <a href="/loading-list">330 상차리스트</a>
+                <a href="/loading-summary">340 상차리스트(총합)</a>
+            </div>
+        </div>
+    </nav>
     <div class="container-fluid">
         {% block content %}
         {% endblock %}

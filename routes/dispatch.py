@@ -2,6 +2,7 @@ from flask import Blueprint
 from flask import render_template
 from flask import request
 from flask import jsonify
+from utils.date_helper import get_default_work_date
 
 from services.balju_service import (
     get_dispatch_summary_by_date,
@@ -23,7 +24,7 @@ def index():
 
 @dispatch_bp.route("/dispatch")
 def dispatch():
-    selected_date = request.args.get("date", "2026-06-12")
+    selected_date = request.args.get("date", get_default_work_date())
     selected_driver = request.args.get("driver")
 
     dispatch_list = get_dispatch_summary_by_date(selected_date)

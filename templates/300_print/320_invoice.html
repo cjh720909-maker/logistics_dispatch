@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="screen-box">
+
+    <form method="get" action="/320-invoice" class="top-filter-box">
+
+        <div class="filter-row">
+
+            <input type="date" name="date" class="form-control" value="{{ selected_date }}">
+
+            <input type="text" name="driver" class="form-control" value="{{ selected_driver }}" placeholder="배차명">
+
+            <label class="check-label">
+                <input type="checkbox" name="no_print_only" value="1" {% if no_print_only %}checked{% endif %}>
+                차량관리의 거래명세서 여부 만
+            </label>
+
+            <button class="btn btn-dark">
+                조회
+            </button>
+
+            <button type="button" class="btn btn-secondary" onclick="window.print()">
+                인쇄
+            </button>
+
+        </div>
+    </form>
+    <div class="row">
+
+        <!-- 왼쪽 선택 영역 -->
+        <div class="col-md-4">
+
+            <div class="mb-2">
+                <input type="checkbox" id="checkAll">
+                <span>전체</span>
+            </div>
+
+            <table class="table table-bordered table-sm dispatch-table">
+                <thead>
+                    <tr>
+                        <th>선택</th>
+                        <th>DOCK번호</th>
+                        <th>기사명</th>
+                        <th>배차명</th>
+                        <th>납품처</th>
+                        <th>고객사</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in invoice_list %}
+                    <tr class="{% if selected_driver == row.CB_DRIVER and selected_customer == row.B_C_NAME %}selected-row{% endif %}"
+                        onclick="location.href='/320-invoice?date={{ selected_date }}&driver={{ row.CB_DRIVER }}&customer={{ row.B_C_NAME }}'"
+                        style="cursor:pointer;">
+                        <td>
+                            <input type="checkbox" class="invoice-check" value="{{ row.CB_DRIVER }}|{{ row.B_C_NAME }}">
+                        </td>
+                        <td>{{ row.CA_DOCKNO }}</td>
+                        <td>{{ row.CA_NAME }}</td>
+                        <td>{{ row.CB_DRIVER }}</td>
+                        <td>{{ row.B_C_NAME }}</td>
+                        <td>{{ row.CB_DIV_CUST }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+
+        <!-- 오른쪽 전표 미리보기 -->
+        <div class="col-md-8">
+
+            <div class="invoice-box">
+
+                <h4 class="text-center">거 래 명 세 서</h4>
+
+                <div class="mb-2">
+                    <strong>납품일:</strong> {{ selected_date }}
+                    &nbsp;&nbsp;
+                    <strong>거래처:</strong> {{ selected_customer }}
+                    &nbsp;&nbsp;
+                    <strong>배차명:</strong> {{ selected_driver }}
+                </div>
+
+                <table class="table table-bordered table-sm">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>품목코드</th>
+                            <th>품목명</th>
+                            <th>입수</th>
+                            <th>수량</th>
+                            <th>단가</th>
+                            <th>금액</th>
+                            <th>부가세</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in invoice_items %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ item.B_P_NO }}</td>
+                            <td>{{ item.B_P_NAME }}</td>
+                            <td>{{ item.B_IN_QTY }}</td>
+                            <td>{{ item.B_QTY }}</td>
+                            <td>{{ item.B_DAN }}</td>
+                            <td>{{ item.amount }}</td>
+                            <td>{{ item.B_VAT_DIV }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<script>
+    document.getElementById("checkAll").addEventListener("change", function () {
+        document.querySelectorAll(".invoice-check").forEach(function (checkbox) {
+            checkbox.checked = document.getElementById("checkAll").checked;
+        });
+    });
+</script>
+{% endblock %}

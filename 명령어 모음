@@ -14,3 +14,8 @@ https://github.com/cjh720909-maker/logistics_dispatch.git
 
 
 B_NAP_NO	B_ORDER_NO
+
+# 기존 t_car 출력 제외 플래그
+# CA_NOPRINT  : 거래명세서 출력 제외
+# CA_NOPRINT1 : ROUTE일보 출력 제외
+# CA_NOPRINT2 : 상차리스트 출력 제외

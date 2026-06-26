@@ -12,8 +12,8 @@ from services.loading_service import (
 loading_bp = Blueprint("loading", __name__)
 
 
-@loading_bp.route("/loading-list")
-def loading_list():
+@loading_bp.route("/loading_list_330")
+def loading_list_330():
     selected_date = request.args.get("date", get_default_work_date())
     selected_driver = request.args.get("driver", "")
     no_print_only = request.args.get("no_print_only") == "1"
@@ -22,7 +22,7 @@ def loading_list():
     rows = get_loading_list(selected_date, selected_driver)
 
     return render_template(
-        "loading_list.html",
+        "300_print/loading_list_330.html",
         selected_date=selected_date,
         selected_driver=selected_driver,
         no_print_only=no_print_only,
@@ -31,8 +31,8 @@ def loading_list():
     )
 
 
-@loading_bp.route("/loading-summary")
-def loading_summary():
+@loading_bp.route("/loading_summary_340")
+def loading_summary_340():
     selected_date = request.args.get("date", get_default_work_date())
     selected_driver = request.args.get("driver", "")
     no_print_only = request.args.get("no_print_only") == "1"
@@ -41,7 +41,7 @@ def loading_summary():
     rows = get_loading_summary(selected_date, selected_driver)
 
     return render_template(
-        "loading_summary.html",
+        "300_print/loading_summary_340.html",
         selected_date=selected_date,
         selected_driver=selected_driver,
         no_print_only=no_print_only,

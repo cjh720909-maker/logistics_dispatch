@@ -4,7 +4,7 @@
 
 <div class="screen-box">
 
-    <form method="get" action="/dispatch" class="row mb-3">
+    <form method="get" action="/dispatch_220" class="row mb-3">
         <div class="col-md-3">
             <input type="date" name="date" class="form-control" value="{{ selected_date }}">
         </div>
@@ -52,7 +52,7 @@
                         <tr class="
                             {% if selected_driver == row.CB_DRIVER %}selected-row{% endif %}
                             {% if row.show_vehicle_total %}vehicle-start-row{% endif %}"
-                            onclick="location.href='/dispatch?date={{ selected_date }}&driver={{ row.CB_DRIVER }}'"
+                            onclick="location.href='/dispatch_220?date={{ selected_date }}&driver={{ row.CB_DRIVER }}'"
                             style="cursor: pointer;">
                             <td>{{ row.CA_GUN }}</td>
                             <td>{{ row.CA_NAME }}</td>

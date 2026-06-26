@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="screen-box">
+
+    <form method="get" action="/pick_group_boxes_360" class="filter-row">
+
+        <input type="date" name="date" class="form-control" value="{{ selected_date }}">
+
+        <button class="btn btn-dark">조회</button>
+
+        <button type="button" class="btn btn-secondary" onclick="window.print()">
+            인쇄
+        </button>
+
+        <button type="button" class="btn btn-success">
+            엑셀저장
+        </button>
+
+        <div class="label-count-box">
+            <span>라벨개수</span>
+
+            <label>
+                <input type="radio" name="label_count" value="16" {% if label_count=="16" %}checked{% endif %}>
+                16개
+            </label>
+
+            <label>
+                <input type="radio" name="label_count" value="10" {% if label_count=="10" %}checked{% endif %}>
+                10개
+            </label>
+
+            <label>
+                <input type="radio" name="label_count" value="8" {% if label_count=="8" %}checked{% endif %}>
+                8개
+            </label>
+        </div>
+
+        <input type="hidden" name="group" value="{{ selected_group }}">
+
+    </form>
+
+    <div class="row">
+
+        <!-- 좌측 피킹그룹 -->
+        <div class="col-md-3">
+
+            <button type="button" class="btn btn-light mb-2">
+                분류코드설정
+            </button>
+
+            <table class="table table-bordered table-sm dispatch-table">
+                <thead>
+                    <tr>
+                        <th>그룹</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for group in groups %}
+                    <tr class="{% if selected_group == group.P_DIV_BAS %}selected-row{% endif %}"
+                        onclick="location.href='/pick_group_boxes_360?date={{ selected_date }}&group={{ group.P_DIV_BAS }}&label_count={{ label_count }}'"
+                        style="cursor:pointer;">
+                        <td>{{ group.P_DIV_BAS }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+
+        <!-- 우측 라벨 미리보기 -->
+        <div class="col-md-9">
+
+            <div class="label360-area label360-count-{{ label_count }}">
+
+                {% for row in rows %}
+                <div class="label360-card">
+
+                    <div class="label360-top">
+                        <span>{{ selected_group }}</span>
+                        <span>{{ selected_date }}</span>
+                    </div>
+
+                    <div class="label360-boxqty">
+                        {{ row.box_qty | blank_zero }}{% if row.piece_qty %}-{{ row.piece_qty }}{% endif %}
+                    </div>
+
+                    <div class="label360-dock">
+                        {{ row.CA_DOCKNO }}
+                    </div>
+
+                    <div class="label360-driver">
+                        {{ row.CB_DRIVER }}
+                    </div>
+
+                </div>
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="screen-box">
+
+    <form method="get" action="/picking_list_350" class="filter-row">
+
+        <input type="date" name="date" class="form-control" value="{{ selected_date }}">
+
+        <input type="text" name="customer" class="form-control" value="{{ selected_customer or '' }}" placeholder="고객사">
+        <label class="check-label">
+            <input type="radio" name="code_type" checked>
+            코드
+        </label>
+
+        <label class="check-label">
+            <input type="radio" name="code_type">
+            바코드
+        </label>
+
+        <button class="btn btn-dark">조회</button>
+
+        <button type="button" class="btn btn-secondary" onclick="window.print()">
+            인쇄
+        </button>
+
+        <button type="button" class="btn btn-success">
+            엑셀저장
+        </button>
+
+    </form>
+
+    <div class="row">
+
+        <!-- 좌측 분류 목록 -->
+        <div class="col-md-3">
+
+            <div class="mb-2">
+                <input type="checkbox" id="checkAll">
+                <span>전체</span>
+            </div>
+
+            <table class="table table-bordered table-sm dispatch-table">
+                <thead>
+                    <tr>
+                        <th>선택</th>
+                        <th>피킹리스트분류</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr class="{% if selected_category == category.C_NAME %}selected-row{% endif %}"
+                        onclick="location.href='/picking_list_350?date={{ selected_date }}&category={{ category.C_NAME }}'"
+                        style="cursor:pointer;">
+                        <td><input type="checkbox"></td>
+                        <td>{{ category.C_NAME }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+
+        <!-- 우측 피킹리스트 -->
+        <div class="col-md-9">
+
+            <div class="print-preview-box">
+
+                <h4 class="text-center">
+                    {{ selected_category }} 피킹리스트
+                </h4>
+
+                <div class="mb-2">
+                    <strong>납품요청일:</strong> {{ selected_date }}
+                </div>
+
+                <table class="table table-bordered table-sm dispatch-table">
+                    <thead>
+                        <tr>
+                            <th>제품명</th>
+                            <th>DOCK</th>
+                            <th>루트</th>
+                            <th>BOX</th>
+                            <th>낱개</th>
+                            <th>총량</th>
+                            <th>코드</th>
+                            <th>입수</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                        <tr class="{% if row.show_product_name %}row350-product-start{% endif %}">
+                            <td>
+                                {% if row.show_product_name %}
+                                {{ row.B_P_NAME }}
+                                {% endif %}
+                            </td>
+                            <td>{{ row.CA_DOCKNO }}</td>
+                            <td>{{ row.CB_DRIVER }}</td>
+                            <td>{{ row.box_qty | blank_zero }}</td>
+                            <td>{{ row.piece_qty | blank_zero }}</td>
+                            <td>{{ row.total_qty | blank_zero }}</td>
+                            <td>{{ row.B_P_NO }}</td>
+                            <td>{{ row.B_IN_QTY }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="screen-box">
+
+    <h5>130 제품관리</h5>
+
+    <form method="get" action="/130-products" class="top-filter-box">
+
+        <div class="filter-row">
+            <input type="text" name="product_name" class="form-control" value="{{ filters.product_name }}"
+                placeholder="제품명">
+
+            <input type="text" name="product_code" class="form-control" value="{{ filters.product_code }}"
+                placeholder="제품코드">
+
+            <input type="text" name="base_category" class="form-control" value="{{ filters.base_category }}"
+                placeholder="기초분류">
+
+            <input type="text" name="picking_category" class="form-control" value="{{ filters.picking_category }}"
+                placeholder="피킹분류">
+        </div>
+
+        <div class="filter-row">
+            <input type="text" name="integrated" class="form-control" value="{{ filters.integrated }}"
+                placeholder="통합검색">
+
+            <button class="btn btn-dark">조회</button>
+
+            <button type="button" class="btn btn-secondary">
+                원본DB 업데이트
+            </button>
+        </div>
+
+    </form>
+
+    <table class="table table-bordered table-sm dispatch-table">
+        <thead>
+            <tr>
+                <th>제품코드</th>
+                <th>제품명</th>
+                <th>기초분류</th>
+                <th>피킹분류</th>
+                <th>입수</th>
+                <th>바코드</th>
+                <th>박스바코드</th>
+                <th>중량</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ row.P_CODE }}</td>
+                <td>{{ row.P_NAME }}</td>
+                <td>{{ row.P_DIV_BAS }}</td>
+                <td>{{ row.P_DIV_PICK }}</td>
+                <td>{{ row.B_IN_QTY | blank_zero }}</td>
+                <td>{{ row.P_BARCODE }}</td>
+                <td>{{ row.P_BOX_BARCODE }}</td>
+                <td>{{ row.P_KG | blank_zero }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

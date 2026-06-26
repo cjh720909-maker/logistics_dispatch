@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="screen-box">
+
+    <form method="get" action="/route_daily_310" class="filter-row">
+        <input type="date" name="date" class="form-control" value="{{ selected_date }}">
+
+        <input type="text" name="driver" class="form-control" value="{{ selected_driver }}" placeholder="기사명">
+
+        <label class="check-label">
+            <input type="checkbox" name="no_print_only" value="1" {% if no_print_only %}checked{% endif %}>
+            차량관리의 인쇄여부 만
+        </label>
+
+        <button class="btn btn-dark">조회</button>
+
+        <button type="button" class="btn btn-secondary" onclick="window.print()">
+            인쇄
+        </button>
+    </form>
+
+    <div class="row">
+
+        <!-- 좌측 기사 목록 -->
+        <div class="col-md-4">
+
+            <div class="mb-2">
+                <input type="checkbox" id="checkAll">
+                <span>전체</span>
+            </div>
+
+            <table class="table table-bordered table-sm dispatch-table">
+                <thead>
+                    <tr>
+                        <th>선택</th>
+                        <th>DOCK번호</th>
+                        <th>기사명</th>
+                        <th>배차명</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for driver in driver_list %}
+                    <tr class="{% if selected_driver == driver.CB_DRIVER %}selected-row{% endif %}"
+                        onclick="location.href='/route_daily_310?date={{ selected_date }}&driver={{ driver.CB_DRIVER }}'"
+                        style="cursor:pointer;">
+                        <td><input type="checkbox"></td>
+                        <td>{{ driver.CA_DOCKNO }}</td>
+                        <td>{{ driver.CA_NAME }}</td>
+                        <td>{{ driver.CB_DRIVER }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+
+        <!-- 우측 ROUTE 일보 -->
+        <div class="col-md-8">
+
+            <div class="route310-paper">
+
+                <div class="route310-header">
+                    <span>{{ selected_date }}</span>
+                    <span>{{ selected_driver }}</span>
+                    <h4>ROUTE 일보</h4>
+                </div>
+
+                <table class="table table-bordered table-sm route310-table">
+                    <thead>
+                        <tr>
+                            <th>배송</th>
+                            <th>거래처명</th>
+                            <th>도착</th>
+                            <th>출발</th>
+                            <th>김치</th>
+                            <th>두부</th>
+                            <th>콩나물</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ row.B_C_NAME }}</td>
+                            <td>:</td>
+                            <td>:</td>
+                            <td>{{ row.kim_qty | blank_zero }}</td>
+                            <td>{{ row.tofu_qty | blank_zero }}</td>
+                            <td>{{ row.sprout_qty | blank_zero }}</td>
+                        </tr>
+                        {% endfor %}
+
+                        {% for i in range(rows|length + 1, 28) %}
+                        <tr>
+                            <td>{{ i }}</td>
+                            <td></td>
+                            <td>:</td>
+                            <td>:</td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <div class="route310-footer">
+                    <div>일주유비 :</div>
+                    <div>일통행료 :</div>
+                    <div>주유량 :</div>
+                    <div>금일지출 :</div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

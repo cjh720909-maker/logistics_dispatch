@@ -4,7 +4,7 @@
 
 <div class="screen-box">
 
-    <form method="get" action="/320-invoice" class="top-filter-box">
+    <form method="get" action="/invoice_320" class="top-filter-box">
 
         <div class="filter-row">
 
@@ -51,7 +51,7 @@
                 <tbody>
                     {% for row in invoice_list %}
                     <tr class="{% if selected_driver == row.CB_DRIVER and selected_customer == row.B_C_NAME %}selected-row{% endif %}"
-                        onclick="location.href='/320-invoice?date={{ selected_date }}&driver={{ row.CB_DRIVER }}&customer={{ row.B_C_NAME }}'"
+                        onclick="location.href='/invoice_320?date={{ selected_date }}&driver={{ row.CB_DRIVER }}&customer={{ row.B_C_NAME }}'"
                         style="cursor:pointer;">
                         <td>
                             <input type="checkbox" class="invoice-check" value="{{ row.CB_DRIVER }}|{{ row.B_C_NAME }}">

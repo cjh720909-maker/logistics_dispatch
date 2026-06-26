@@ -12,18 +12,18 @@ from services.balju_service import (
 )
 
 dispatch_bp = Blueprint(
-    "dispatch",
+    "dispatch_220",
     __name__
 )
 
 
 @dispatch_bp.route("/")
 def index():
-    return dispatch()
+    return dispatch_220()
 
 
-@dispatch_bp.route("/dispatch")
-def dispatch():
+@dispatch_bp.route("/dispatch_220")
+def dispatch_220():
     selected_date = request.args.get("date", get_default_work_date())
     selected_driver = request.args.get("driver")
 
@@ -37,7 +37,7 @@ def dispatch():
     total_data = get_dispatch_total(dispatch_list)
 
     return render_template(
-        "dispatch.html",
+        "200/dispatch_220.html",
         dispatch_list=dispatch_list,
         customers=customers,
         dispatch_total=dispatch_total,

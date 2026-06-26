@@ -3,7 +3,7 @@
 {% block content %}
 
 <div class="screen-box">
-    <form method="get" action="/loading-summary" class="row mb-3">
+    <form method="get" action="/loading_summary_340" class="row mb-3">
         <div class="col-md-2">
             <input type="date" name="date" class="form-control" value="{{ selected_date }}">
         </div>
@@ -37,7 +37,7 @@
                 <tbody>
                     {% for driver in driver_list %}
                     <tr class="{% if selected_driver == driver.CB_DRIVER %}selected-row{% endif %}"
-                        onclick="location.href='/loading-summary?date={{ selected_date }}&driver={{ driver.CB_DRIVER }}'"
+                        onclick="location.href='/loading_summary_340?date={{ selected_date }}&driver={{ driver.CB_DRIVER }}'"
                         style="cursor: pointer;">
                         <td><input type="checkbox"></td>
                         <td>{{ driver.CA_DOCKNO }}</td>

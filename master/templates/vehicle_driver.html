@@ -23,10 +23,6 @@
 
         <div class="filter-row">
             <button class="btn btn-dark">조회</button>
-
-            <button type="button" class="btn btn-secondary">
-                동기화
-            </button>
         </div>
 
     </form>
@@ -43,6 +39,9 @@
                 <th>거래명세서 제외</th>
                 <th>ROUTE일보 제외</th>
                 <th>상차리스트 제외</th>
+                <th>아침DAS</th>
+                <th>오후DAS</th>
+                <th>저녁DAS</th>
             </tr>
         </thead>
         <tbody>
@@ -57,6 +56,9 @@
                 <td>{{ row.SKIP_INVOICE_PRINT }}</td>
                 <td>{{ row.SKIP_ROUTE_PRINT }}</td>
                 <td>{{ row.SKIP_LOADING_PRINT }}</td>
+                <td>{{ row.DAS_MORNING_LINE }} {{ row.DAS_MORNING_NO }}</td>
+                <td>{{ row.DAS_AFTERNOON_LINE }} {{ row.DAS_AFTERNOON_NO }}</td>
+                <td>{{ row.DAS_EVENING_LINE }} {{ row.DAS_EVENING_NO }}</td>
             </tr>
             {% endfor %}
         </tbody>

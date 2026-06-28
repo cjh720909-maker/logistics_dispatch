@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="screen-box">
+
+    <h5>920 DB 동기화</h5>
+
+    <table class="table table-bordered table-sm dispatch-table">
+        <thead>
+            <tr>
+                <th>대상</th>
+                <th>원본 테이블</th>
+                <th>로컬 테이블</th>
+                <th>마지막 동기화</th>
+                <th>건수</th>
+                <th>실행</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>제품</td>
+                <td>t_product</td>
+                <td>product</td>
+                <td>
+                    {% if sync_status.product %}
+                    {{ sync_status.product.synced_at }}
+                    {% else %}
+                    <span class="sync-ready">미동기화</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if sync_status.product %}
+                    {{ sync_status.product.row_count }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="post" action="/sync_product_920">
+                        <button class="btn btn-dark btn-sm">동기화</button>
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td>고객사</td>
+                <td>t_cust</td>
+                <td>customer</td>
+                <td>
+                    {% if sync_status.customer %}
+                    {{ sync_status.customer.synced_at }}
+                    {% else %}
+                    <span class="sync-ready">미동기화</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if sync_status.customer %}
+                    {{ sync_status.customer.row_count }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="post" action="/sync_customer_920">
+                        <button class="btn btn-dark btn-sm">동기화</button>
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td>거래처</td>
+                <td>t_cust_bae</td>
+                <td>delivery</td>
+                <td>
+                    {% if sync_status.delivery %}
+                    {{ sync_status.delivery.synced_at }}
+                    {% else %}
+                    <span class="sync-ready">미동기화</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if sync_status.delivery %}
+                    {{ sync_status.delivery.row_count }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="post" action="/sync_delivery_920">
+                        <button class="btn btn-dark btn-sm">동기화</button>
+                    </form>
+                </td>
+            </tr>
+            <tr>
+                <td>차량</td>
+                <td>t_car</td>
+                <td>vehicle</td>
+                <td>
+                    {% if sync_status.vehicle %}
+                    {{ sync_status.vehicle.synced_at }}
+                    {% else %}
+                    <span class="sync-ready">미동기화</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if sync_status.vehicle %}
+                    {{ sync_status.vehicle.row_count }}
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="post" action="/sync_vehicle_920">
+                        <button class="btn btn-dark btn-sm">동기화</button>
+                    </form>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+{% if product_sync_result %}
+<div class="alert alert-success">
+    {{ product_sync_result.message }}
+</div>
+{% endif %}
+{% if customer_sync_result %}
+<div class="alert alert-success">
+    {{ customer_sync_result.message }}
+</div>
+{% endif %}
+{% if delivery_sync_result %}
+<div class="alert alert-success">
+    {{ delivery_sync_result.message }}
+</div>
+{% endif %}
+{% if vehicle_sync_result %}
+<div class="alert alert-success">
+    {{ vehicle_sync_result.message }}
+</div>
+{% endif %}
+{% endblock %}

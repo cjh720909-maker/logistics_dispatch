@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="screen-box">
+
+    <h5>911 Local DB 관리</h5>
+
+    <form method="post" action="/local_sql_911">
+        <div class="mb-2">
+            <strong>DB 파일:</strong> {{ local_db_info.db_path }}
+            /
+            <strong>크기:</strong> {{ local_db_info.file_size_mb }} MB
+        </div>
+
+        <div class="mb-2 d-flex gap-2 flex-wrap">
+            {% for table, count in local_db_info.table_counts.items() %}
+            <span class="sync-ok">
+                {{ table }}: {{ count }}건
+            </span>
+            {% endfor %}
+        </div>
+        <textarea name="sql_text" class="form-control" rows="4" placeholder="Local SQLite SQL">{{ sql_text }}</textarea>
+
+        <div class="mt-2 mb-2 d-flex gap-2 flex-wrap">
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="setSql('SELECT name FROM sqlite_master WHERE type=\'table\' ORDER BY name;')">
+                TABLES
+            </button>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="setSql('PRAGMA table_info(product);')">
+                product 컬럼
+            </button>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="setSql('SELECT COUNT(*) AS count FROM product;')">
+                product 건수
+            </button>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="setSql('SELECT * FROM product LIMIT 100;')">
+                product TOP100
+            </button>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="setSql('SELECT * FROM customer LIMIT 100;')">
+                customer TOP100
+            </button>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="setSql('SELECT * FROM delivery LIMIT 100;')">
+                delivery TOP100
+            </button>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="setSql('SELECT * FROM vehicle LIMIT 100;')">
+                vehicle TOP100
+            </button>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setSql('SELECT * FROM sync_log;')">
+                sync_log
+            </button>
+
+            <button class="btn btn-dark btn-sm">실행</button>
+        </div>
+
+    </form>
+
+    {% if error_message %}
+    <div class="alert alert-danger">
+        {{ error_message }}
+    </div>
+    {% endif %}
+
+    {% if executed_sql %}
+    <div class="mb-2">
+        <strong>실행 SQL:</strong>
+        <code>{{ executed_sql }}</code>
+    </div>
+    {% endif %}
+
+    {% if rows %}
+    <div class="mb-2">
+        조회 결과: <strong>{{ rows|length }}</strong>건
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table class="table table-bordered table-sm dispatch-table">
+            <thead>
+                <tr>
+                    {% for col in columns %}
+                    <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    {% for col in columns %}
+                    <td>{{ row[col] }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+    function setSql(sql) {
+        document.querySelector("textarea[name='sql_text']").value = sql;
+    }
+</script>
+
+{% endblock %}

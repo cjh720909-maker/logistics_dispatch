@@ -27,10 +27,6 @@
                 placeholder="통합검색">
 
             <button class="btn btn-dark">조회</button>
-
-            <button type="button" class="btn btn-secondary">
-                동기화
-            </button>
         </div>
 
     </form>
@@ -53,14 +49,14 @@
             {% for row in rows %}
             <tr>
                 <td>{{ loop.index }}</td>
-                <td>{{ row.P_CODE }}</td>
-                <td>{{ row.P_NAME }}</td>
-                <td>{{ row.P_DIV_BAS }}</td>
-                <td>{{ row.P_DIV_PICK }}</td>
-                <td>{{ row.P_IPSU | blank_zero }}</td>
-                <td>{{ row.P_BARCODE }}</td>
-                <td>{{ row.P_BOX_BARCODE }}</td>
-                <td>{{ row.P_KG | blank_zero }}</td>
+                <td>{{ row.PRODUCT_CODE }}</td>
+                <td>{{ row.PRODUCT_NAME }}</td>
+                <td>{{ row.BASE_CATEGORY }}</td>
+                <td>{{ row.PICK_CATEGORY }}</td>
+                <td>{{ row.IPSU | blank_zero }}</td>
+                <td>{{ row.BARCODE }}</td>
+                <td>{{ row.BOX_BARCODE }}</td>
+                <td>{{ row.WEIGHT | blank_zero }}</td>
             </tr>
             {% endfor %}
         </tbody>

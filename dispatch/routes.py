@@ -4,7 +4,7 @@ from flask import request
 from flask import jsonify
 from utils.date_helper import get_default_work_date
 
-from services.balju_service import (
+from dispatch.service import(
     get_dispatch_summary_by_date,
     get_customer_list_by_driver,
     get_dispatch_total,
@@ -12,10 +12,10 @@ from services.balju_service import (
 )
 
 dispatch_bp = Blueprint(
-    "dispatch_220",
-    __name__
+    "dispatch",
+    __name__,
+    template_folder="templates"
 )
-
 
 @dispatch_bp.route("/")
 def index():
@@ -37,7 +37,7 @@ def dispatch_220():
     total_data = get_dispatch_total(dispatch_list)
 
     return render_template(
-        "200/dispatch_220.html",
+        "dispatch.html",
         dispatch_list=dispatch_list,
         customers=customers,
         dispatch_total=dispatch_total,

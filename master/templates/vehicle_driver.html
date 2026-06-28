@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="screen-box">
+
+    <h5>140 차량/기사관리</h5>
+
+    <form method="get" action="/vehicle_driver_140" class="top-filter-box">
+
+        <div class="filter-row">
+            <input type="text" name="driver_name" class="form-control" value="{{ filters.driver_name }}"
+                placeholder="기사명">
+
+            <input type="text" name="dispatch_name" class="form-control" value="{{ filters.dispatch_name }}"
+                placeholder="배차명">
+
+            <input type="text" name="area_name" class="form-control" value="{{ filters.area_name }}" placeholder="권역">
+
+            <input type="text" name="integrated" class="form-control" value="{{ filters.integrated }}"
+                placeholder="통합검색">
+        </div>
+
+        <div class="filter-row">
+            <button class="btn btn-dark">조회</button>
+
+            <button type="button" class="btn btn-secondary">
+                동기화
+            </button>
+        </div>
+
+    </form>
+
+    <table class="table table-bordered table-sm dispatch-table">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>DOCK</th>
+                <th>권역</th>
+                <th>기사명</th>
+                <th>배차명</th>
+                <th>적재중량</th>
+                <th>거래명세서 제외</th>
+                <th>ROUTE일보 제외</th>
+                <th>상차리스트 제외</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ row.DOCK_NO }}</td>
+                <td>{{ row.AREA_NAME }}</td>
+                <td>{{ row.DRIVER_NAME }}</td>
+                <td>{{ row.DISPATCH_NAME }}</td>
+                <td>{{ row.CAPACITY_TON | blank_zero }}</td>
+                <td>{{ row.SKIP_INVOICE_PRINT }}</td>
+                <td>{{ row.SKIP_ROUTE_PRINT }}</td>
+                <td>{{ row.SKIP_LOADING_PRINT }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

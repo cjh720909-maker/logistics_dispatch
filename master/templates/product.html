@@ -6,7 +6,7 @@
 
     <h5>130 제품관리</h5>
 
-    <form method="get" action="/130-products" class="top-filter-box">
+    <form method="get" action="/product_130" class="top-filter-box">
 
         <div class="filter-row">
             <input type="text" name="product_name" class="form-control" value="{{ filters.product_name }}"
@@ -29,7 +29,7 @@
             <button class="btn btn-dark">조회</button>
 
             <button type="button" class="btn btn-secondary">
-                원본DB 업데이트
+                동기화
             </button>
         </div>
 
@@ -38,6 +38,7 @@
     <table class="table table-bordered table-sm dispatch-table">
         <thead>
             <tr>
+                <th>No</th>
                 <th>제품코드</th>
                 <th>제품명</th>
                 <th>기초분류</th>
@@ -45,17 +46,18 @@
                 <th>입수</th>
                 <th>바코드</th>
                 <th>박스바코드</th>
-                <th>중량</th>
+                <th>낱개중량</th>
             </tr>
         </thead>
         <tbody>
             {% for row in rows %}
             <tr>
+                <td>{{ loop.index }}</td>
                 <td>{{ row.P_CODE }}</td>
                 <td>{{ row.P_NAME }}</td>
                 <td>{{ row.P_DIV_BAS }}</td>
                 <td>{{ row.P_DIV_PICK }}</td>
-                <td>{{ row.B_IN_QTY | blank_zero }}</td>
+                <td>{{ row.P_IPSU | blank_zero }}</td>
                 <td>{{ row.P_BARCODE }}</td>
                 <td>{{ row.P_BOX_BARCODE }}</td>
                 <td>{{ row.P_KG | blank_zero }}</td>

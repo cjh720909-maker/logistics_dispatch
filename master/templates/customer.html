@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="screen-box">
+
+    <h5>110 고객사관리</h5>
+
+    <form method="get" action="/customer_110" class="top-filter-box">
+
+        <div class="filter-row">
+            <input type="text" name="customer_name" class="form-control" value="{{ filters.customer_name }}"
+                placeholder="고객사명">
+
+            <input type="text" name="customer_code" class="form-control" value="{{ filters.customer_code }}"
+                placeholder="고객사코드">
+
+            <input type="text" name="integrated" class="form-control" value="{{ filters.integrated }}"
+                placeholder="통합검색">
+
+            <button class="btn btn-dark">조회</button>
+
+            <button type="button" class="btn btn-secondary">
+                동기화
+            </button>
+        </div>
+
+    </form>
+
+    <table class="table table-bordered table-sm dispatch-table">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>고객사코드</th>
+                <th>고객사명</th>
+                <th>사업자번호</th>
+                <th>대표</th>
+                <th>주소</th>
+                <th>전화번호</th>
+                <th>핸드폰번호</th>
+                <th>납품서유형</th>
+                <th>DAS 피킹시간</th>
+                <th>비고</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ row.CUSTOMER_CODE }}</td>
+                <td>{{ row.CUSTOMER_NAME }}</td>
+                <td>{{ row.BUSINESS_NO }}</td>
+                <td>{{ row.CEO_NAME }}</td>
+                <td>{{ row.ADDRESS }}</td>
+                <td>{{ row.PHONE }}</td>
+                <td>{{ row.MOBILE }}</td>
+                <td>{{ row.PRINT_TYPE }}</td>
+                <td>{{ row.DAS_TIME }}</td>
+                <td>{{ row.MEMO }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

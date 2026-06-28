@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="screen-box">
+
+    <h5>120 거래처관리</h5>
+
+    <form method="get" action="/delivery_customer_120" class="top-filter-box">
+
+        <div class="filter-row">
+            <input type="text" name="delivery_name" class="form-control" value="{{ filters.delivery_name }}"
+                placeholder="거래처명">
+
+            <input type="text" name="dispatch_name" class="form-control" value="{{ filters.dispatch_name }}"
+                placeholder="배차명">
+
+            <input type="text" name="address" class="form-control" value="{{ filters.address }}" placeholder="주소">
+
+            <input type="text" name="integrated" class="form-control" value="{{ filters.integrated }}"
+                placeholder="통합검색">
+
+            <button class="btn btn-dark">조회</button>
+
+            <button type="button" class="btn btn-secondary">
+                동기화
+            </button>
+        </div>
+
+    </form>
+
+    <table class="table table-bordered table-sm dispatch-table">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>거래처코드</th>
+                <th>거래처명</th>
+                <th>배차명</th>
+                <th>고객사</th>
+                <th>주소</th>
+                <th>전화</th>
+                <th>휴대폰</th>
+                <th>담당자</th>
+                <th>공유차량</th>
+                <th>비고</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ row.DELIVERY_CODE }}</td>
+                <td>{{ row.DELIVERY_NAME }}</td>
+                <td>{{ row.DISPATCH_NAME }}</td>
+                <td>{{ row.CUSTOMER_GROUP }}</td>
+                <td>{{ row.ADDRESS }}</td>
+                <td>{{ row.PHONE }}</td>
+                <td>{{ row.MOBILE }}</td>
+                <td>{{ row.MANAGER }}</td>
+                <td>{{ row.SHARED_VEHICLE }}</td>
+                <td>{{ row.MEMO }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

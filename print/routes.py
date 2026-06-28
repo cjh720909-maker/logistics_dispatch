@@ -4,7 +4,7 @@ from flask import request
 
 from utils.date_helper import get_default_work_date
 
-from services.menu_300_print_service import (
+from print.service import(
     get_300_driver_list,
     get_320_customer_list,
     get_320_invoice_items,
@@ -15,10 +15,16 @@ from services.menu_300_print_service import (
     get_310_route_items,
     get_360_pick_groups,
     get_360_pick_group_boxes,
+    get_loading_driver_list,
+    get_loading_list,
+    get_loading_summary,
 )
 
-print_bp = Blueprint("print_300", __name__)
-
+print_bp = Blueprint(
+    "print",
+    __name__,
+    template_folder="templates"
+)
 
 @print_bp.route("/invoice_320")
 def invoice_320():
@@ -37,7 +43,7 @@ def invoice_320():
     )
 
     return render_template(
-        "300_print/invoice_320.html",
+        "invoice_320.html",
         selected_date=selected_date,
         selected_driver=selected_driver,
         selected_customer=selected_customer,
@@ -56,7 +62,7 @@ def picking_list_350():
     rows = get_350_picking_items(selected_date, selected_category)
 
     return render_template(
-        "300_print/picking_list_350.html",
+        "picking_list_350.html",
         selected_date=selected_date,
         selected_category=selected_category,
         selected_customer=selected_customer,
@@ -74,7 +80,7 @@ def route_daily_310():
     rows = get_310_route_items(selected_date, selected_driver)
 
     return render_template(
-        "300_print/route_daily_310.html",
+        "route_daily_310.html",
         selected_date=selected_date,
         selected_driver=selected_driver,
         no_print_only=no_print_only,
@@ -92,10 +98,47 @@ def pick_group_boxes_360():
     rows = get_360_pick_group_boxes(selected_date, selected_group)
 
     return render_template(
-        "300_print/pick_group_boxes_360.html",
+        "pick_group_boxes_360.html",
         selected_date=selected_date,
         selected_group=selected_group,
         label_count=label_count,
         groups=groups,
+        rows=rows,
+    )
+
+@print_bp.route("/loading_list_330")
+def loading_list_330():
+    selected_date = request.args.get("date", get_default_work_date())
+    selected_driver = request.args.get("driver", "")
+    no_print_only = request.args.get("no_print_only") == "1"
+
+    driver_list = get_loading_driver_list(selected_date, no_print_only)
+    rows = get_loading_list(selected_date, selected_driver)
+
+    return render_template(
+        "loading_list_330.html",
+        selected_date=selected_date,
+        selected_driver=selected_driver,
+        no_print_only=no_print_only,
+        driver_list=driver_list,
+        rows=rows,
+    )
+
+
+@print_bp.route("/loading_summary_340")
+def loading_summary_340():
+    selected_date = request.args.get("date", get_default_work_date())
+    selected_driver = request.args.get("driver", "")
+    no_print_only = request.args.get("no_print_only") == "1"
+
+    driver_list = get_loading_driver_list(selected_date, no_print_only)
+    rows = get_loading_summary(selected_date, selected_driver)
+
+    return render_template(
+        "loading_summary_340.html",
+        selected_date=selected_date,
+        selected_driver=selected_driver,
+        no_print_only=no_print_only,
+        driver_list=driver_list,
         rows=rows,
     )

@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="screen-box">
+
+    <h5>910 SQL 조회</h5>
+
+    <form method="post" action="/sql_query_910">
+
+        <textarea name="sql_text" class="form-control" rows="5"
+            placeholder="SELECT / SHOW / DESCRIBE만 가능">{{ sql_text }}</textarea>
+
+        <div class="mt-2 mb-2 d-flex gap-2 align-items-center flex-wrap">
+
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setSql('SHOW TABLES;')">
+                SHOW TABLES
+            </button>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="setSql('SHOW COLUMNS FROM t_cust_bae;')">
+                거래처 컬럼
+            </button>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="setSql('SHOW COLUMNS FROM t_product;')">
+                제품 컬럼
+            </button>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setSql('SHOW COLUMNS FROM t_car;')">
+                차량 컬럼
+            </button>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="setSql('SELECT * FROM t_cust_bae LIMIT 10;')">
+                거래처 샘플
+            </button>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="setSql('SELECT * FROM t_product LIMIT 10;')">
+                제품 샘플
+            </button>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="setSql('SELECT * FROM t_car LIMIT 10;')">
+                차량 샘플
+            </button>
+
+            <label class="check-label">
+                <input type="checkbox" name="auto_limit" value="1" {% if auto_limit %}checked{% endif %}>
+                SELECT LIMIT 500 자동 적용
+            </label>
+
+            <button class="btn btn-dark btn-sm">실행</button>
+
+        </div>
+
+    </form>
+
+    {% if error_message %}
+    <div class="alert alert-danger">
+        {{ error_message }}
+    </div>
+    {% endif %}
+
+    {% if executed_sql %}
+    <div class="mb-2">
+        <strong>실행 SQL:</strong>
+        <code>{{ executed_sql }}</code>
+    </div>
+    {% endif %}
+
+    {% if rows %}
+    <div class="mb-2">
+        조회 결과: <strong>{{ rows|length }}</strong>건
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table class="table table-bordered table-sm dispatch-table">
+            <thead>
+                <tr>
+                    {% for col in columns %}
+                    <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    {% for col in columns %}
+                    <td>{{ row[col] }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+    function setSql(sql) {
+        document.querySelector("textarea[name='sql_text']").value = sql;
+    }
+</script>
+
+{% endblock %}

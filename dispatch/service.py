@@ -551,3 +551,192 @@ def change_customer_driver(selected_date, current_driver, target_driver, selecte
             updated_count += result.rowcount
 
     return updated_count
+def search_prepare_orders(filters):
+    selected_date = filters.get("date")
+    delivery_name = filters.get("delivery_name")
+    delivery_code = filters.get("delivery_code")
+    product_name = filters.get("product_name")
+    product_code = filters.get("product_code")
+    order_no = filters.get("order_no")
+    nap_no = filters.get("nap_no")
+    customer_name = filters.get("customer_name")
+    seller_name = filters.get("seller_name")
+    ex_seq = filters.get("ex_seq")
+
+    sql = """
+        SELECT
+            B_IDX,
+            B_DATE,
+            CB_DRIVER,
+            B_C_NAME,
+            B_C_PAN_NAME,
+            B_C_CODE,
+            B_NAP_DIV,
+            B_P_NO,
+            B_P_NAME,
+            B_DAN,
+            B_VAT_DIV,
+            B_IN_QTY,
+            B_QTY,
+            B_KG,
+            B_ORDER_NO,
+            B_NAP_NO,
+            B_EX_SEQ,
+            B_MEMO,
+            CB_ADDRESS
+        FROM dispatch_order
+        WHERE 1 = 1
+    """
+
+    params = []
+
+    if selected_date:
+        sql += " AND B_DATE = ?"
+        params.append(selected_date)
+
+    if delivery_name:
+        sql += " AND B_C_NAME LIKE ?"
+        params.append(f"%{delivery_name}%")
+
+    if delivery_code:
+        sql += " AND B_C_CODE LIKE ?"
+        params.append(f"%{delivery_code}%")
+
+    if product_name:
+        sql += " AND B_P_NAME LIKE ?"
+        params.append(f"%{product_name}%")
+
+    if product_code:
+        sql += " AND B_P_NO LIKE ?"
+        params.append(f"%{product_code}%")
+
+    if order_no:
+        sql += " AND B_ORDER_NO LIKE ?"
+        params.append(f"%{order_no}%")
+
+    if nap_no:
+        sql += " AND B_NAP_NO LIKE ?"
+        params.append(f"%{nap_no}%")
+
+    if customer_name:
+        sql += " AND C_NAME LIKE ?"
+        params.append(f"%{customer_name}%")
+
+    if seller_name:
+        sql += " AND B_C_PAN_NAME LIKE ?"
+        params.append(f"%{seller_name}%")
+
+    if ex_seq:
+        sql += " AND B_EX_SEQ LIKE ?"
+        params.append(f"%{ex_seq}%")
+
+    sql += """
+        ORDER BY
+            CB_DRIVER,
+            B_C_NAME,
+            B_P_NAME,
+            B_IDX
+    """
+
+    with local_engine.connect() as conn:
+        result = conn.exec_driver_sql(sql, tuple(params))
+        return [dict(row) for row in result.mappings().all()]
+
+def apply_emergency_to_orders(order_ids):
+    if not order_ids:
+        return 0
+
+    updated_count = 0
+
+    with local_engine.begin() as conn:
+        for order_id in order_ids:
+            result = conn.exec_driver_sql(
+                """
+                UPDATE dispatch_order
+                SET
+                    B_C_NAME =
+                        CASE
+                            WHEN B_C_NAME LIKE '%-긴급'
+                            THEN B_C_NAME
+                            ELSE B_C_NAME || '-긴급'
+                        END,
+                    CB_DRIVER = '임시배차',
+                    B_MEMO =
+                        CASE
+                            WHEN B_MEMO IS NULL OR B_MEMO = ''
+                            THEN '긴급'
+                            WHEN B_MEMO LIKE '%긴급%'
+                            THEN B_MEMO
+                            ELSE B_MEMO || ' / 긴급'
+                        END
+                WHERE B_IDX = ?
+                """,
+                (
+                    order_id,
+                )
+            )
+
+            updated_count += result.rowcount
+
+    return updated_count
+
+def cancel_emergency_orders(order_ids):
+    if not order_ids:
+        return 0
+
+    updated_count = 0
+
+    with local_engine.begin() as conn:
+        for order_id in order_ids:
+            row = conn.exec_driver_sql(
+                """
+                SELECT
+                    B_C_NAME,
+                    B_C_CODE
+                FROM dispatch_order
+                WHERE B_IDX = ?
+                """,
+                (order_id,)
+            ).mappings().first()
+
+            if not row:
+                continue
+
+            original_name = row["B_C_NAME"].replace("-긴급", "")
+
+            delivery = conn.exec_driver_sql(
+                """
+                SELECT
+                    dispatch_name
+                FROM delivery
+                WHERE name = ?
+                LIMIT 1
+                """,
+                (original_name,)
+            ).mappings().first()
+
+            original_driver = delivery["dispatch_name"] if delivery else row["B_C_NAME"]
+
+            result = conn.exec_driver_sql(
+                """
+                UPDATE dispatch_order
+                SET
+                    B_C_NAME = ?,
+                    CB_DRIVER = ?,
+                    B_MEMO =
+                        CASE
+                            WHEN B_MEMO = '긴급' THEN ''
+                            ELSE REPLACE(REPLACE(B_MEMO, ' / 긴급', ''), '긴급 / ', '')
+                        END
+                WHERE B_IDX = ?
+                """,
+                (
+                    original_name,
+                    original_driver,
+                    order_id,
+                )
+            )
+
+            updated_count += result.rowcount
+
+    return updated_count

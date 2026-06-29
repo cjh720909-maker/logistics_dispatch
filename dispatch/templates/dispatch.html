@@ -81,7 +81,7 @@
         <div class="col-md-7">
             <div class="dispatch-table-wrap">
 
-                <form method="post" action="/dispatch_230/change_driver">
+                <form method="post" action="/dispatch_230/change_driver" id="changeDriverForm">
                     <input type="hidden" name="date" value="{{ selected_date }}">
                     <input type="hidden" name="current_driver" value="{{ selected_driver }}">
 
@@ -232,6 +232,34 @@
             document.querySelectorAll(".customer-check").forEach(function (checkbox) {
                 checkbox.checked = checkAll.checked;
             });
+        });
+    }
+    const changeDriverForm = document.getElementById("changeDriverForm");
+
+    if (changeDriverForm) {
+        changeDriverForm.addEventListener("submit", function (event) {
+            const targetDriver = document.querySelector("select[name='target_driver']").value;
+            const checkedCustomers = document.querySelectorAll(".customer-check:checked");
+
+            if (!targetDriver) {
+                alert("변경할 배차명을 선택하세요.");
+                event.preventDefault();
+                return;
+            }
+
+            if (checkedCustomers.length === 0) {
+                alert("변경할 거래처를 선택하세요.");
+                event.preventDefault();
+                return;
+            }
+
+            const message =
+                checkedCustomers.length + "개 거래처를 [" + targetDriver + "] 배차명으로 변경하시겠습니까?";
+
+            if (!confirm(message)) {
+                event.preventDefault();
+                return;
+            }
         });
     }
 </script>

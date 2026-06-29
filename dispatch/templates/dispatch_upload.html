@@ -1,9 +1,42 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="screen-box">
-    <h5>210 업로드 관리</h5>
 
-    <p>엑셀 업로드, 고객사별 컬럼 매핑, Local 주문 저장 화면입니다.</p>
+<div class="screen-box">
+
+    <h5>210 업로드 관리 / 발주 동기화</h5>
+
+    <form method="post" action="/dispatch_210" class="row mb-3">
+        <div class="col-md-3">
+            <label class="form-label">작업일자</label>
+            <input type="date" name="date" class="form-control" value="{{ selected_date }}">
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+            <button class="btn btn-dark w-100"
+                onclick="return confirm('선택한 날짜의 발주를 동기화하시겠습니까? 기존 Local 데이터는 삭제 후 다시 저장됩니다.');">
+                발주 동기화
+            </button>
+        </div>
+    </form>
+
+    {% if sync_result %}
+    <div class="alert alert-success">
+        {{ sync_result.message }}
+    </div>
+
+    <div class="mt-2">
+        <a href="/dispatch_230?date={{ selected_date }}" class="btn btn-primary btn-sm">
+            230 배차조정으로 이동
+        </a>
+    </div>
+    {% endif %}
+
+    <div class="alert alert-warning mt-3">
+        발주 동기화는 MySQL 원본을 조회하여 선택 날짜의 발주를 Local DB(dispatch_order)에 저장합니다.
+        기존 동일 날짜 Local 데이터는 삭제 후 다시 저장됩니다.
+    </div>
+
 </div>
+
 {% endblock %}

@@ -4,6 +4,195 @@
 <div class="screen-box">
     <h5>220 업무연락 적용 / 배차 사전작업</h5>
 
-    <p>착지변경, 긴급출고, 요청사항 반영, 주문 보류 처리 화면입니다.</p>
+    <form method="get" action="/dispatch_220" class="mb-3">
+
+        <div class="row g-2 mb-2">
+            <div class="col-md-1">
+                <label class="form-label">납품요청일</label>
+                <input type="date" name="date" class="form-control form-control-sm" value="{{ filters.date }}">
+            </div>
+
+            <div class="col-md-1">
+                <label class="form-label">납품처</label>
+                <input type="text" name="delivery_name" class="form-control form-control-sm"
+                    value="{{ filters.delivery_name }}">
+            </div>
+
+            <div class="col-md-1">
+                <label class="form-label">납품처코드</label>
+                <input type="text" name="delivery_code" class="form-control form-control-sm"
+                    value="{{ filters.delivery_code }}">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">자재명</label>
+                <input type="text" name="product_name" class="form-control form-control-sm"
+                    value="{{ filters.product_name }}">
+            </div>
+
+            <div class="col-md-1">
+                <label class="form-label">제품코드</label>
+                <input type="text" name="product_code" class="form-control form-control-sm"
+                    value="{{ filters.product_code }}">
+            </div>
+
+            <div class="col-md-1">
+                <label class="form-label">오더번호</label>
+                <input type="text" name="order_no" class="form-control form-control-sm" value="{{ filters.order_no }}">
+            </div>
+
+            <div class="col-md-1">
+                <label class="form-label">납품번호</label>
+                <input type="text" name="nap_no" class="form-control form-control-sm" value="{{ filters.nap_no }}">
+            </div>
+
+            <div class="col-md-1">
+                <label class="form-label">고객사</label>
+                <input type="text" name="customer_name" class="form-control form-control-sm"
+                    value="{{ filters.customer_name }}">
+            </div>
+
+            <div class="col-md-1">
+                <label class="form-label">판매처</label>
+                <input type="text" name="seller_name" class="form-control form-control-sm"
+                    value="{{ filters.seller_name }}">
+            </div>
+
+            <div class="col-md-1">
+                <label class="form-label">입력순번</label>
+                <input type="text" name="ex_seq" class="form-control form-control-sm" value="{{ filters.ex_seq }}">
+            </div>
+
+            <div class="col-md-1 d-flex align-items-end">
+                <button class="btn btn-dark btn-sm w-100">조회</button>
+            </div>
+        </div>
+    </form>
+
+    <form method="post" action="/dispatch_220/apply_emergency" id="emergencyForm">
+        <input type="hidden" name="date" value="{{ filters.date }}">
+        <input type="hidden" name="delivery_name" value="{{ filters.delivery_name }}">
+        <input type="hidden" name="delivery_code" value="{{ filters.delivery_code }}">
+        <input type="hidden" name="product_name" value="{{ filters.product_name }}">
+        <input type="hidden" name="product_code" value="{{ filters.product_code }}">
+        <input type="hidden" name="order_no" value="{{ filters.order_no }}">
+        <input type="hidden" name="nap_no" value="{{ filters.nap_no }}">
+        <input type="hidden" name="customer_name" value="{{ filters.customer_name }}">
+        <input type="hidden" name="seller_name" value="{{ filters.seller_name }}">
+        <input type="hidden" name="ex_seq" value="{{ filters.ex_seq }}">
+
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="checkAllOrders">
+                전체선택
+            </button>
+
+            <button type="submit" class="btn btn-danger btn-sm">
+                긴급
+            </button>
+            <button type="submit" class="btn btn-outline-danger btn-sm" formaction="/dispatch_220/cancel_emergency">
+                긴급취소
+            </button>
+        </div>
+        <div class="mb-2">
+            조회 결과: <strong>{{ orders|length }}</strong>건
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="table table-bordered table-sm dispatch-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>선택</th>
+                        <th>납품요청일</th>
+                        <th>배송기사</th>
+                        <th>기초배차</th>
+                        <th>납품처</th>
+                        <th>납품처(수정)</th>
+                        <th>납품처코드</th>
+                        <th>판매처</th>
+                        <th>납품구분</th>
+                        <th>자재번호</th>
+                        <th>자재명</th>
+                        <th>기초분류</th>
+                        <th>단가</th>
+                        <th>부가세</th>
+                        <th>입수</th>
+                        <th>낱개수량</th>
+                        <th>순중량</th>
+                        <th>오더번호</th>
+                        <th>납품번호</th>
+                        <th>메모</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in orders %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>
+                            <input type="checkbox" name="selected_orders" class="order-check" value="{{ row.B_IDX }}">
+                        </td>
+                        <td>{{ row.B_DATE }}</td>
+                        <td>{{ row.CB_DRIVER }}</td>
+                        <td>{{ row.CB_DRIVER }}</td>
+                        <td>{{ row.B_C_NAME_ORI or row.B_C_NAME }}</td>
+                        <td>{{ row.B_C_NAME }}</td>
+                        <td>{{ row.B_C_CODE }}</td>
+                        <td>{{ row.B_C_PAN_NAME }}</td>
+                        <td>{{ row.B_NAP_DIV }}</td>
+                        <td>{{ row.B_P_NO }}</td>
+                        <td>{{ row.B_P_NAME }}</td>
+                        <td>{{ row.B_VAT_DIV }}</td>
+                        <td>{{ row.B_DAN }}</td>
+                        <td>{{ row.B_VAT_DIV }}</td>
+                        <td>{{ row.B_IN_QTY }}</td>
+                        <td>{{ row.B_QTY }}</td>
+                        <td>{{ row.B_KG }}</td>
+                        <td>{{ row.B_ORDER_NO }}</td>
+                        <td>{{ row.B_NAP_NO }}</td>
+                        <td>{{ row.B_MEMO }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
 </div>
+<script>
+    const checkAllOrders = document.getElementById("checkAllOrders");
+
+    if (checkAllOrders) {
+        checkAllOrders.addEventListener("click", function () {
+            const checks = document.querySelectorAll(".order-check");
+            const allChecked = Array.from(checks).every(c => c.checked);
+
+            checks.forEach(function (checkbox) {
+                checkbox.checked = !allChecked;
+            });
+        });
+    }
+
+    const emergencyForm = document.getElementById("emergencyForm");
+
+    if (emergencyForm) {
+        emergencyForm.addEventListener("submit", function (event) {
+            const checked = document.querySelectorAll(".order-check:checked");
+
+            if (checked.length === 0) {
+                alert("긴급 처리할 주문을 선택하세요.");
+                event.preventDefault();
+                return;
+            }
+
+            const submitter = event.submitter;
+            const actionText = submitter && submitter.textContent.includes("취소")
+                ? "긴급 취소"
+                : "긴급 처리";
+
+            if (!confirm(checked.length + "건을 " + actionText + "하시겠습니까?")) {
+                event.preventDefault();
+                return;
+            }
+        });
+    }
+</script>
 {% endblock %}

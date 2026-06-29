@@ -5,6 +5,13 @@
 <div class="screen-box">
 
     <h5>920 DB 동기화</h5>
+    <div class="mb-2">
+        <form method="post" action="/sync_all_920">
+            <button class="btn btn-primary btn-sm">
+                전체 동기화
+            </button>
+        </form>
+    </div>
 
     <table class="table table-bordered table-sm dispatch-table">
         <thead>
@@ -119,24 +126,40 @@
 
 </div>
 
+{% if sync_all_result %}
+<div class="alert alert-success mt-3">
+    <strong>전체 동기화 완료</strong>
+    <ul class="mb-0">
+        <li>제품 : {{ sync_all_result.product.message }}</li>
+        <li>고객사 : {{ sync_all_result.customer.message }}</li>
+        <li>거래처 : {{ sync_all_result.delivery.message }}</li>
+        <li>차량 : {{ sync_all_result.vehicle.message }}</li>
+    </ul>
+</div>
+{% endif %}
+
 {% if product_sync_result %}
-<div class="alert alert-success">
+<div class="alert alert-success mt-3">
     {{ product_sync_result.message }}
 </div>
 {% endif %}
+
 {% if customer_sync_result %}
-<div class="alert alert-success">
+<div class="alert alert-success mt-3">
     {{ customer_sync_result.message }}
 </div>
 {% endif %}
+
 {% if delivery_sync_result %}
-<div class="alert alert-success">
+<div class="alert alert-success mt-3">
     {{ delivery_sync_result.message }}
 </div>
 {% endif %}
+
 {% if vehicle_sync_result %}
-<div class="alert alert-success">
+<div class="alert alert-success mt-3">
     {{ vehicle_sync_result.message }}
 </div>
 {% endif %}
+
 {% endblock %}

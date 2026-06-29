@@ -4,7 +4,7 @@
 
 <div class="screen-box">
 
-    <form method="get" action="/dispatch_220" class="row mb-3">
+    <form method="get" action="/dispatch_230" class="row mb-3">
         <div class="col-md-3">
             <input type="date" name="date" class="form-control" value="{{ selected_date }}">
         </div>
@@ -52,7 +52,7 @@
                         <tr class="
                             {% if selected_driver == row.CB_DRIVER %}selected-row{% endif %}
                             {% if row.show_vehicle_total %}vehicle-start-row{% endif %}"
-                            onclick="location.href='/dispatch_220?date={{ selected_date }}&driver={{ row.CB_DRIVER }}'"
+                            onclick="location.href='/dispatch_230?date={{ selected_date }}&driver={{ row.CB_DRIVER }}'"
                             style="cursor: pointer;">
                             <td>{{ row.CA_GUN }}</td>
                             <td>{{ row.CA_NAME }}</td>
@@ -80,39 +80,68 @@
         <!-- 우측 거래처 목록 -->
         <div class="col-md-7">
             <div class="dispatch-table-wrap">
-                <h6>선택 배차명 거래처 목록</h6>
 
-                <table class="table table-bordered table-sm dispatch-table">
-                    <thead>
-                        <tr>
-                            <th>선택</th>
-                            <th>거래처</th>
-                            <th>김류</th>
-                            <th>냉동</th>
-                            <th>콩나물</th>
-                            <th>순중량</th>
-                            <th>주소</th>
-                            <th>공유차량</th>
-                            <th>특이사항</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for customer in customers %}
-                        <tr class="customer-row" data-customer-name="{{ customer.B_C_NAME }}"
-                            data-customer-address="{{ customer.CB_ADDRESS }}">
-                            <td><input type="checkbox"></td>
-                            <td>{{ customer.B_C_NAME }}</td>
-                            <td>{{ customer.kim_qty }}</td>
-                            <td>{{ customer.frozen_qty }}</td>
-                            <td>{{ customer.sprout_qty }}</td>
-                            <td>{{ customer.total_kg }}</td>
-                            <td>{{ customer.CB_ADDRESS }}</td>
-                            <td>{{ customer.CB_GONG }}</td>
-                            <td>{{ customer.CB_MEMO }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <form method="post" action="/dispatch_230/change_driver">
+                    <input type="hidden" name="date" value="{{ selected_date }}">
+                    <input type="hidden" name="current_driver" value="{{ selected_driver }}">
+
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <h6 class="mb-0">선택 배차명 거래처 목록</h6>
+
+                        <label class="ms-3">전체</label>
+                        <input type="checkbox" id="checkAllCustomers">
+
+                        <span class="ms-3">선택된 물량을</span>
+
+                        <select name="target_driver" class="form-select form-select-sm" style="width: 180px;">
+                            <option value="">배차명 선택</option>
+                            {% for name in dispatch_names %}
+                            <option value="{{ name }}">{{ name }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <span>로 조정</span>
+
+                        <button type="submit" class="btn btn-dark btn-sm">
+                            저장
+                        </button>
+                    </div>
+
+                    <table class="table table-bordered table-sm dispatch-table">
+                        <thead>
+                            <tr>
+                                <th>선택</th>
+                                <th>거래처</th>
+                                <th>김류</th>
+                                <th>냉동</th>
+                                <th>콩나물</th>
+                                <th>순중량</th>
+                                <th>주소</th>
+                                <th>공유차량</th>
+                                <th>특이사항</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for customer in customers %}
+                            <tr class="customer-row" data-customer-name="{{ customer.B_C_NAME }}"
+                                data-customer-address="{{ customer.CB_ADDRESS }}">
+                                <td>
+                                    <input type="checkbox" name="selected_customers" class="customer-check"
+                                        value="{{ customer.B_C_NAME }}||{{ customer.CB_ADDRESS }}">
+                                </td>
+                                <td>{{ customer.B_C_NAME }}</td>
+                                <td>{{ customer.kim_qty }}</td>
+                                <td>{{ customer.frozen_qty }}</td>
+                                <td>{{ customer.sprout_qty }}</td>
+                                <td>{{ customer.total_kg }}</td>
+                                <td>{{ customer.CB_ADDRESS }}</td>
+                                <td>{{ customer.CB_GONG }}</td>
+                                <td>{{ customer.CB_MEMO }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </form>
             </div>
         </div>
     </div>
@@ -196,5 +225,14 @@
                 });
         });
     });
+    const checkAll = document.getElementById("checkAllCustomers");
+
+    if (checkAll) {
+        checkAll.addEventListener("change", function () {
+            document.querySelectorAll(".customer-check").forEach(function (checkbox) {
+                checkbox.checked = checkAll.checked;
+            });
+        });
+    }
 </script>
 {% endblock %}

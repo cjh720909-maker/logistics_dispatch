@@ -2,6 +2,8 @@ import base64
 import math
 from decimal import Decimal
 from db import engine
+from db_local import local_engine
+
 from utils.encoding import (
     fix_encoding,
     fix_row,
@@ -12,9 +14,8 @@ from utils.encoding import (
 def make_vehicle_key(raw_gun, raw_name):
     value = f"{raw_gun or ''}||{raw_name or ''}"
     return base64.urlsafe_b64encode(
-        value.encode("latin1")
+        value.encode("utf-8")
     ).decode("ascii")
-
 
 def read_vehicle_key(vehicle_key):
     if not vehicle_key:
@@ -22,12 +23,11 @@ def read_vehicle_key(vehicle_key):
 
     value = base64.urlsafe_b64decode(
         vehicle_key.encode("ascii")
-    ).decode("latin1")
+    ).decode("utf-8")
 
     raw_gun, raw_name = value.split("||", 1)
 
     return raw_gun, raw_name
-
 
 def to_float(value):
     if value is None:
@@ -43,29 +43,29 @@ def get_dispatch_summary_by_date(selected_date):
     if not selected_date:
         return []
 
-    with engine.connect() as conn:
+    with local_engine.connect() as conn:
         result = conn.exec_driver_sql(
             """
             SELECT
                 b.CB_DRIVER,
-                c.CA_GUN,
-                c.CA_NAME,
-                c.CA_DOCKNO,
-                c.CA_KG,
+                c.area_name AS CA_GUN,
+                c.driver_name AS CA_NAME,
+                c.dock_no AS CA_DOCKNO,
+                c.capacity_ton AS CA_KG,
                 COUNT(DISTINCT b.B_C_CODE) AS customer_count,
                 COUNT(*) AS item_count,
                 SUM(b.B_QTY) AS total_qty,
                 SUM(b.B_KG) AS total_kg
-            FROM t_balju b
-            LEFT JOIN t_car c
-                ON b.CB_DRIVER = c.CB_DRIVER
-            WHERE b.B_DATE = %s
+            FROM dispatch_order b
+            LEFT JOIN vehicle c
+                ON b.CB_DRIVER = c.dispatch_name
+            WHERE b.B_DATE = ?
             GROUP BY
                 b.CB_DRIVER,
-                c.CA_GUN,
-                c.CA_NAME,
-                c.CA_DOCKNO,
-                c.CA_KG
+                c.area_name,
+                c.driver_name,
+                c.dock_no,
+                c.capacity_ton
             """,
             (selected_date,)
         )
@@ -122,9 +122,9 @@ def get_dispatch_summary_by_date(selected_date):
 
             fixed_rows.append({
                 "vehicle_key": make_vehicle_key(raw_gun, raw_name),
-                "CB_DRIVER": fix_encoding(raw_driver),
-                "CA_GUN": fix_encoding(raw_gun),
-                "CA_NAME": fix_encoding(raw_name),
+                "CB_DRIVER": raw_driver,
+                "CA_GUN": raw_gun,
+                "CA_NAME": raw_name,
                 "CA_DOCKNO": row["CA_DOCKNO"],
                 "CA_KG": car_ton,
                 "capacity_kg": capacity_kg,
@@ -164,12 +164,11 @@ def get_customer_list_by_driver(selected_date, driver):
     if not selected_date or not driver:
         return []
 
-    raw_driver = driver.encode("cp949").decode("latin1")
-    raw_kim = "김류".encode("cp949").decode("latin1")
-    raw_frozen = "냉동".encode("cp949").decode("latin1")
-    raw_sprout = "콩나물".encode("cp949").decode("latin1")
+    raw_kim = "김류"
+    raw_frozen = "냉동"
+    raw_sprout = "콩나물"
 
-    with engine.connect() as conn:
+    with local_engine.connect() as conn:
         result = conn.exec_driver_sql(
             """
             SELECT
@@ -177,63 +176,91 @@ def get_customer_list_by_driver(selected_date, driver):
                 b.B_C_NAME,
                 MAX(b.B_C_PAN_NAME) AS B_C_PAN_NAME,
                 b.CB_ADDRESS,
-                MAX(c.CB_GONG) AS CB_GONG,
-                MAX(c.CB_MEMO) AS CB_MEMO,
+                MAX(c.shared_vehicle) AS CB_GONG,
+                MAX(c.memo) AS CB_MEMO,
 
                 SUM(
                     CASE
-                        WHEN p.P_DIV_BAS = %s
+                        WHEN p.base_category = ?
                         THEN CEIL(
                             b.B_QTY / NULLIF(b.B_IN_QTY, 0)
                         )
                         ELSE 0
                     END
                 ) AS kim_qty,
+
                 SUM(
                     CASE
-                        WHEN p.P_DIV_BAS = %s
+                        WHEN p.base_category = ?
                         THEN CEIL(
                             b.B_QTY / NULLIF(b.B_IN_QTY, 0)
                         )
                         ELSE 0
                     END
                 ) AS frozen_qty,
+
                 SUM(
                     CASE
-                        WHEN p.P_DIV_BAS = %s
+                        WHEN p.base_category = ?
                         THEN CEIL(
                             b.B_QTY / NULLIF(b.B_IN_QTY, 0)
                         )
                         ELSE 0
                     END
                 ) AS sprout_qty,
+
                 COUNT(*) AS item_count,
                 SUM(b.B_QTY) AS total_qty,
                 CEIL(SUM(b.B_KG)) AS total_kg
-            FROM t_balju b
-            LEFT JOIN t_cust_bae c
-                ON b.CB_IDX = c.CB_IDX
-            LEFT JOIN t_product p
-                ON b.B_P_NO = p.P_CODE
-            WHERE b.B_DATE = %s
-            AND b.CB_DRIVER = %s
+
+            FROM dispatch_order b
+
+            LEFT JOIN delivery c
+                ON b.CB_CODE = c.code
+
+            LEFT JOIN (
+                SELECT
+                    code,
+                    MAX(base_category) AS base_category
+                FROM product
+                GROUP BY code
+            ) p
+                ON b.B_P_NO = p.code
+
+            WHERE b.B_DATE = ?
+            AND b.CB_DRIVER = ?
+
             GROUP BY
                 b.B_C_NAME,
                 b.CB_ADDRESS
+
             ORDER BY
                 b.CB_ADDRESS,
                 b.B_C_NAME
-                """,
-            (raw_kim, raw_frozen, raw_sprout, selected_date, raw_driver)
+            """,
+            (
+                raw_kim,
+                raw_frozen,
+                raw_sprout,
+                selected_date,
+                driver,
+            )
         )
 
         rows = result.mappings().all()
 
         return [
-            fix_row(dict(row))
+            {
+                **dict(row),
+                "kim_qty": int(row["kim_qty"] or 0),
+                "frozen_qty": int(row["frozen_qty"] or 0),
+                "sprout_qty": int(row["sprout_qty"] or 0),
+                "total_qty": int(row["total_qty"] or 0),
+                "total_kg": int(row["total_kg"] or 0),
+            }
             for row in rows
         ]
-        
+
 def get_dispatch_total(dispatch_list):
     total_kg = 0
     center_kg = 0
@@ -272,16 +299,18 @@ def get_pick_qty_map(selected_date):
 
     if not selected_date:
         return pick_map
+
     product_map = get_product_map()
-    with engine.connect() as conn:        
+
+    with local_engine.connect() as conn:
         result = conn.exec_driver_sql(
             """
             SELECT
                 b.CB_DRIVER,
                 b.B_P_NO,
                 b.B_QTY
-            FROM t_balju b
-            WHERE b.B_DATE = %s
+            FROM dispatch_order b
+            WHERE b.B_DATE = ?
             """,
             (selected_date,)
         )
@@ -290,33 +319,24 @@ def get_pick_qty_map(selected_date):
 
         for row in rows:
             raw_driver = row["CB_DRIVER"]
-
             p_code = row["B_P_NO"]
+            qty = to_float(row["B_QTY"])
 
-            qty = to_float(
-                row["B_QTY"]
-            )
-
-            product = product_map.get(
-                p_code
-            )
+            product = product_map.get(p_code)
 
             if not product:
                 continue
 
             div_pick = product["div_pick"]
-
             ipsu = product["ipsu"]
 
-            pick_type = get_pick_type(
-                div_pick
-            )
+            pick_type = get_pick_type(div_pick)
 
             if ipsu > 0:
                 box_qty = qty / ipsu
             else:
                 box_qty = qty
-            
+
             if raw_driver not in pick_map:
                 pick_map[raw_driver] = {
                     "kim_qty": 0,
@@ -332,57 +352,35 @@ def get_pick_qty_map(selected_date):
 
             elif pick_type == "콩나물":
                 pick_map[raw_driver]["sprout_qty"] += box_qty
-       
+
     return pick_map
 
 def get_product_map():
-
     product_map = {}
 
-    with engine.connect() as conn:
-
+    with local_engine.connect() as conn:
         result = conn.exec_driver_sql(
             """
             SELECT
-                P_CODE,
-                P_GROUP,
-                P_DIV_PICK,
-                P_IPSU
-            FROM t_product
+                code,
+                base_category,
+                pick_category,
+                ipsu
+            FROM product
             """
         )
 
         rows = result.mappings().all()
 
         for row in rows:
-
-            p_code = row["P_CODE"]
-
-            group_name = fix_encoding(
-                row["P_GROUP"]
-            )
-
-            div_pick = fix_encoding(
-                row["P_DIV_PICK"]
-            )
+            p_code = row["code"]
 
             product_info = {
-                "div_pick": div_pick,
-                "ipsu": to_float(
-                    row["P_IPSU"]
-                )
+                "div_pick": row["pick_category"],
+                "ipsu": to_float(row["ipsu"])
             }
 
-            # 처음 등록
-
             if p_code not in product_map:
-
-                product_map[p_code] = product_info
-
-            # 대상 우선
-
-            elif group_name == "대상":
-
                 product_map[p_code] = product_info
 
     return product_map
@@ -391,11 +389,8 @@ def get_customer_orders(selected_date, driver, customer_name, customer_address):
     if not selected_date or not driver or not customer_name:
         return []
 
-    raw_driver = driver.encode("cp949").decode("latin1")
-    raw_customer_name = customer_name.encode("cp949").decode("latin1")
-    raw_customer_address = customer_address.encode("cp949").decode("latin1")
+    with local_engine.connect() as conn:
 
-    with engine.connect() as conn:
         result = conn.exec_driver_sql(
             """
             SELECT
@@ -407,29 +402,152 @@ def get_customer_orders(selected_date, driver, customer_name, customer_address):
                 b.B_KG,
                 b.B_NAP_NO,
                 b.B_ORDER_NO,
-                p.P_DIV_BAS,
+
+                p.base_category AS P_DIV_BAS,
+
                 ROUND(b.B_IN_QTY, 0) AS B_IN_QTY,
+
                 b.B_QTY AS piece_qty
-            FROM t_balju b
-            LEFT JOIN t_product p
-                ON b.B_P_NO = p.P_CODE
-            WHERE b.B_DATE = %s
-            AND b.CB_DRIVER = %s
-            AND b.B_C_NAME = %s
-            AND b.CB_ADDRESS = %s
-            ORDER BY p.P_DIV_BAS, b.B_P_NAME
+
+            FROM dispatch_order b
+
+            LEFT JOIN (
+                SELECT
+                    code,
+                    MAX(base_category) AS base_category
+                FROM product
+                GROUP BY code
+            ) p
+                ON b.B_P_NO = p.code
+
+            WHERE b.B_DATE = ?
+            AND b.CB_DRIVER = ?
+            AND b.B_C_NAME = ?
+            AND b.CB_ADDRESS = ?
+
+            ORDER BY
+                p.base_category,
+                b.B_P_NAME
             """,
             (
                 selected_date,
-                raw_driver,
-                raw_customer_name,
-                raw_customer_address,
+                driver,
+                customer_name,
+                customer_address,
             )
         )
 
         rows = result.mappings().all()
 
         return [
-            fix_row(dict(row))
+            dict(row)
             for row in rows
         ]
+
+def get_vehicle_dispatch_names():
+    with local_engine.connect() as conn:
+        result = conn.exec_driver_sql(
+            """
+            SELECT DISTINCT
+                dispatch_name
+            FROM vehicle
+            WHERE dispatch_name IS NOT NULL
+            AND dispatch_name != ''
+            ORDER BY dispatch_name
+            """
+        )
+
+        return [
+            row["dispatch_name"]
+            for row in result.mappings().all()
+        ]
+
+
+def change_customer_driver(selected_date, current_driver, target_driver, selected_customers):
+    if not selected_date or not current_driver or not target_driver:
+        return 0
+
+    if not selected_customers:
+        return 0
+
+    updated_count = 0
+
+    with local_engine.begin() as conn:
+        for item in selected_customers:
+            customer_name, customer_address = item.split("||", 1)
+
+            result = conn.exec_driver_sql(
+                """
+                UPDATE dispatch_order
+                SET CB_DRIVER = ?
+                WHERE B_DATE = ?
+                AND CB_DRIVER = ?
+                AND B_C_NAME = ?
+                AND CB_ADDRESS = ?
+                """,
+                (
+                    target_driver,
+                    selected_date,
+                    current_driver,
+                    customer_name,
+                    customer_address,
+                )
+            )
+
+            updated_count += result.rowcount
+
+    return updated_count
+
+def get_vehicle_dispatch_names():
+    with local_engine.connect() as conn:
+        result = conn.exec_driver_sql(
+            """
+            SELECT DISTINCT
+                dispatch_name
+            FROM vehicle
+            WHERE dispatch_name IS NOT NULL
+            AND dispatch_name != ''
+            ORDER BY dispatch_name
+            """
+        )
+
+        return [
+            row["dispatch_name"]
+            for row in result.mappings().all()
+        ]
+
+
+def change_customer_driver(selected_date, current_driver, target_driver, selected_customers):
+    if not selected_date or not current_driver or not target_driver:
+        return 0
+
+    if not selected_customers:
+        return 0
+
+    updated_count = 0
+
+    with local_engine.begin() as conn:
+        for item in selected_customers:
+            customer_name, customer_address = item.split("||", 1)
+
+            result = conn.exec_driver_sql(
+                """
+                UPDATE dispatch_order
+                SET CB_DRIVER = ?
+                WHERE B_DATE = ?
+                AND CB_DRIVER = ?
+                AND B_C_NAME = ?
+                AND CB_ADDRESS = ?
+                """,
+                (
+                    target_driver,
+                    selected_date,
+                    current_driver,
+                    customer_name,
+                    customer_address,
+                )
+            )
+
+            updated_count += result.rowcount
+
+    return updated_count

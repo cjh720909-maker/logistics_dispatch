@@ -61,7 +61,28 @@
             <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setSql('SELECT * FROM sync_log;')">
                 sync_log
             </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="setSql('SELECT * FROM sync_log ORDER BY synced_at DESC LIMIT 20;')">
+                sync_log 최근20
+            </button>
 
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="setSql('PRAGMA table_info(delivery);')">
+                delivery 컬럼
+            </button>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm"
+                onclick="setSql('PRAGMA table_info(vehicle);')">
+                vehicle 컬럼
+            </button>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setSql('VACUUM;')">
+                VACUUM
+            </button>
+
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setSql('ANALYZE;')">
+                ANALYZE
+            </button>
             <button class="btn btn-dark btn-sm">실행</button>
         </div>
 
@@ -72,14 +93,22 @@
         {{ error_message }}
     </div>
     {% endif %}
-
+    {% if executed_sql and not error_message %}
+    <div class="alert alert-success">
+        SQL 실행 완료
+    </div>
+    {% endif %}
     {% if executed_sql %}
     <div class="mb-2">
         <strong>실행 SQL:</strong>
         <code>{{ executed_sql }}</code>
     </div>
     {% endif %}
-
+    {% if executed_sql and not rows and not error_message %}
+    <div class="mb-2">
+        결과 행 없음
+    </div>
+    {% endif %}
     {% if rows %}
     <div class="mb-2">
         조회 결과: <strong>{{ rows|length }}</strong>건

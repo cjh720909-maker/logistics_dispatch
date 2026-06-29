@@ -1,9 +1,6 @@
 from flask import Blueprint
 from flask import render_template
 from flask import request
-from system.sync import sync_product
-from flask import redirect
-from flask import url_for
 
 from system.service import (
     run_safe_sql,
@@ -101,6 +98,21 @@ def sync_vehicle_920():
         sync_status=get_sync_status(),
     )
 
+@system_bp.route("/sync_all_920", methods=["POST"])
+def sync_all_920():
+    results = {
+        "product": sync_product(),
+        "customer": sync_customer(),
+        "delivery": sync_delivery(),
+        "vehicle": sync_vehicle(),
+    }
+
+    return render_template(
+        "db_sync.html",
+        sync_all_result=results,
+        sync_status=get_sync_status(),
+    )
+    
 @system_bp.route("/local_sql_911", methods=["GET", "POST"])
 def local_sql_911():
     sql_text = ""

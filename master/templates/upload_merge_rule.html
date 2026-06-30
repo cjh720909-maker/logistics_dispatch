@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="screen-box">
+
+    <h5>152 납품처 합치기 규칙</h5>
+
+    <form method="post" action="/upload_merge_rule_152" class="mb-3">
+        <div class="row g-2">
+            <div class="col-md-2">
+                <label class="form-label">그룹명</label>
+                <input type="text" name="group_name" class="form-control form-control-sm">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">원본 코드</label>
+                <input type="text" name="source_code" class="form-control form-control-sm">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">원본 납품처</label>
+                <input type="text" name="source_name" class="form-control form-control-sm">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">대상 코드</label>
+                <input type="text" name="target_code" class="form-control form-control-sm">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">대상 납품처</label>
+                <input type="text" name="target_name" class="form-control form-control-sm">
+            </div>
+
+            <div class="col-md-2">
+                <label class="form-label">메모</label>
+                <input type="text" name="memo" class="form-control form-control-sm">
+            </div>
+
+        </div>
+
+        <div class="mt-2">
+            <button class="btn btn-dark btn-sm">
+                등록
+            </button>
+        </div>
+    </form>
+
+    <div class="mb-2">
+        등록건수: <strong>{{ rows|length }}</strong>
+    </div>
+
+    <table class="table table-bordered table-sm dispatch-table">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>그룹명</th>
+                <th>원본 코드</th>
+                <th>원본 납품처</th>
+                <th>대상 코드</th>
+                <th>대상 납품처</th>
+                <th>메모</th>
+                <th>사용</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ row.group_name }}</td>
+                <td>{{ row.source_code }}</td>
+                <td>{{ row.source_name }}</td>
+                <td>{{ row.target_code }}</td>
+                <td>{{ row.target_name }}</td>
+                <td>{{ row.memo }}</td>
+                <td>{% if row.is_active %}사용{% else %}미사용{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}

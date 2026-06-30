@@ -630,6 +630,18 @@ def search_prepare_orders(filters):
         sql += " AND B_EX_SEQ LIKE ?"
         params.append(f"%{ex_seq}%")
 
+    has_filter = any([
+        delivery_name,
+        delivery_code,
+        product_name,
+        product_code,
+        order_no,
+        nap_no,
+        customer_name,
+        seller_name,
+        ex_seq,
+    ])
+
     sql += """
         ORDER BY
             CB_DRIVER,
@@ -638,6 +650,11 @@ def search_prepare_orders(filters):
             B_IDX
     """
 
+    if has_filter:
+        sql += " LIMIT 500"
+    else:
+        sql += " LIMIT 100"
+        
     with local_engine.connect() as conn:
         result = conn.exec_driver_sql(sql, tuple(params))
         return [dict(row) for row in result.mappings().all()]
@@ -740,3 +757,186 @@ def cancel_emergency_orders(order_ids):
             updated_count += result.rowcount
 
     return updated_count
+
+def update_product_name_orders(order_ids, new_product_name):
+    if not order_ids or not new_product_name:
+        return 0
+
+    updated_count = 0
+
+    with local_engine.begin() as conn:
+        for order_id in order_ids:
+            result = conn.exec_driver_sql(
+                """
+                UPDATE dispatch_order
+                SET B_P_NAME = ?
+                WHERE B_IDX = ?
+                """,
+                (
+                    new_product_name,
+                    order_id,
+                )
+            )
+
+            updated_count += result.rowcount
+
+    return updated_count
+
+def get_product_name_rules_for_select():
+    with local_engine.connect() as conn:
+        result = conn.exec_driver_sql(
+            """
+            SELECT
+                id,
+                before_name,
+                after_name
+            FROM product_name_rule
+            WHERE is_active = 1
+            ORDER BY before_name
+            """
+        )
+
+        return [dict(row) for row in result.mappings().all()]
+
+
+def apply_product_name_rule(order_ids, rule_id):
+    if not order_ids or not rule_id:
+        return 0
+
+    with local_engine.connect() as conn:
+        rule = conn.exec_driver_sql(
+            """
+            SELECT
+                before_name,
+                after_name
+            FROM product_name_rule
+            WHERE id = ?
+            """,
+            (rule_id,)
+        ).mappings().first()
+
+    if not rule:
+        return 0
+
+    updated_count = 0
+
+    with local_engine.begin() as conn:
+        for order_id in order_ids:
+            result = conn.exec_driver_sql(
+                """
+                UPDATE dispatch_order
+                SET B_P_NAME = ?
+                WHERE B_IDX = ?
+                """,
+                (
+                    rule["after_name"],
+                    order_id,
+                )
+            )
+
+            updated_count += result.rowcount
+
+    return updated_count
+
+def apply_storage_orders(order_ids):
+    if not order_ids:
+        return 0
+
+    updated_count = 0
+
+    with local_engine.begin() as conn:
+        for order_id in order_ids:
+            row = conn.exec_driver_sql(
+                """
+                SELECT
+                    B_IDX,
+                    B_DATE,
+                    B_C_NAME,
+                    B_P_NO,
+                    B_P_NAME,
+                    B_QTY,
+                    B_KG
+                FROM dispatch_order
+                WHERE B_IDX = ?
+                """,
+                (order_id,)
+            ).mappings().first()
+
+            if not row:
+                continue
+
+            conn.exec_driver_sql(
+                """
+                INSERT INTO dispatch_storage (
+                    dispatch_order_id,
+                    storage_date,
+                    customer_name,
+                    product_code,
+                    product_name,
+                    qty,
+                    weight,
+                    status,
+                    reason
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, 'STORED', ?)
+                """,
+                (
+                    row["B_IDX"],
+                    row["B_DATE"],
+                    row["B_C_NAME"],
+                    row["B_P_NO"],
+                    row["B_P_NAME"],
+                    row["B_QTY"],
+                    row["B_KG"],
+                    "보관",
+                )
+            )
+
+            result = conn.exec_driver_sql(
+                """
+                UPDATE dispatch_order
+                SET
+                    CB_DRIVER = '보관',
+                    B_MEMO =
+                        CASE
+                            WHEN B_MEMO IS NULL OR B_MEMO = ''
+                            THEN '보관'
+                            WHEN B_MEMO LIKE '%보관%'
+                            THEN B_MEMO
+                            ELSE B_MEMO || ' / 보관'
+                        END
+                WHERE B_IDX = ?
+                """,
+                (order_id,)
+            )
+
+            updated_count += result.rowcount
+
+    return updated_count
+
+def get_storage_list():
+    with local_engine.connect() as conn:
+        result = conn.exec_driver_sql(
+            """
+            SELECT
+                id,
+                dispatch_order_id,
+                storage_date,
+                release_date,
+                customer_name,
+                product_code,
+                product_name,
+                qty,
+                weight,
+                status,
+                reason,
+                created_at
+            FROM dispatch_storage
+            ORDER BY
+                storage_date DESC,
+                id DESC
+            """
+        )
+
+        return [dict(row) for row in result.mappings().all()]
+

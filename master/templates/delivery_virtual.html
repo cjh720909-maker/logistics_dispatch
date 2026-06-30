@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="screen-box">
+
+    <h5>121 가상 거래처 생성</h5>
+
+    <form method="get" action="/delivery_customer_120/virtual" class="row g-2 mb-3">
+        <div class="col-md-4">
+            <label class="form-label">기존 거래처 검색</label>
+            <input type="text" name="keyword" class="form-control form-control-sm" value="{{ keyword }}"
+                placeholder="거래처명 / 코드 / 주소">
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+            <button class="btn btn-dark btn-sm w-100">
+                검색
+            </button>
+        </div>
+    </form>
+
+    <div class="alert alert-info">
+        기존 거래처를 검색한 뒤, 해당 거래처의 주소/전화번호/기본배차/메모를 복사하여 가상 거래처를 생성합니다.
+        새 거래처 코드는 새 거래처명과 동일하게 저장됩니다.
+    </div>
+
+    <div class="mb-2">
+        검색 결과: <strong>{{ rows|length }}</strong>건
+    </div>
+
+    <table class="table table-bordered table-sm dispatch-table">
+        <thead>
+            <tr>
+                <th>코드</th>
+                <th>거래처명</th>
+                <th>배차명</th>
+                <th>주소</th>
+                <th>전화</th>
+                <th>메모</th>
+                <th>가상 거래처 생성</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ row.code }}</td>
+                <td>{{ row.name }}</td>
+                <td>{{ row.dispatch_name }}</td>
+                <td>{{ row.address }}</td>
+                <td>{{ row.phone }}</td>
+                <td>{{ row.memo }}</td>
+                <td style="min-width: 280px;">
+                    <form method="post" action="/delivery_customer_120/virtual" class="d-flex gap-2">
+                        <input type="hidden" name="source_code" value="{{ row.code }}">
+                        <input type="text" name="new_name" class="form-control form-control-sm" placeholder="새 거래처명"
+                            required>
+                        <button class="btn btn-primary btn-sm"
+                            onclick="return confirm('선택한 거래처를 기준으로 가상 거래처를 생성하시겠습니까?');">
+                            생성
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}

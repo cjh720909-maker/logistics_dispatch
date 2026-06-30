@@ -92,6 +92,31 @@
             <button type="submit" class="btn btn-outline-danger btn-sm" formaction="/dispatch_220/cancel_emergency">
                 긴급취소
             </button>
+            <button type="submit" class="btn btn-warning btn-sm" formaction="/dispatch_220/apply_storage">
+                보관
+            </button>
+            <select name="product_name_rule_id" class="form-select form-select-sm" style="width: 320px;">
+                <option value="">제품명 규칙 선택</option>
+                {% for rule in product_name_rules %}
+                <option value="{{ rule.id }}">
+                    {{ rule.before_name }} → {{ rule.after_name }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <button type="submit" class="btn btn-outline-primary btn-sm"
+                formaction="/dispatch_220/apply_product_name_rule">
+                규칙적용
+            </button>
+            <input type="text" name="new_product_name" class="form-control form-control-sm" style="width: 240px;"
+                placeholder="변경할 제품명">
+
+            <button type="submit" class="btn btn-outline-primary btn-sm" formaction="/dispatch_220/update_product_name">
+                제품명 변경
+            </button>
+        </div>
+        <div class="text-muted mb-2">
+            최대 500건까지 표시됩니다. 납품처명, 제품명, 오더번호 등으로 검색해서 작업하세요.
         </div>
         <div class="mb-2">
             조회 결과: <strong>{{ orders|length }}</strong>건
@@ -193,6 +218,39 @@
                 return;
             }
         });
+    }
+    if (submitter && submitter.textContent.includes("제품명 변경")) {
+        const newProductName = document.querySelector("input[name='new_product_name']").value;
+
+        if (!newProductName) {
+            alert("변경할 제품명을 입력하세요.");
+            event.preventDefault();
+            return;
+        }
+
+        if (!confirm(checked.length + "건의 제품명을 [" + newProductName + "] 으로 변경하시겠습니까?")) {
+            event.preventDefault();
+            return;
+        }
+
+        return;
+    }
+    if (submitter && submitter.textContent.includes("규칙적용")) {
+        const ruleSelect = document.querySelector("select[name='product_name_rule_id']");
+        const ruleText = ruleSelect.options[ruleSelect.selectedIndex].text;
+
+        if (!ruleSelect.value) {
+            alert("제품명 규칙을 선택하세요.");
+            event.preventDefault();
+            return;
+        }
+
+        if (!confirm(checked.length + "건에 제품명 규칙을 적용하시겠습니까?\n" + ruleText)) {
+            event.preventDefault();
+            return;
+        }
+
+        return;
     }
 </script>
 {% endblock %}

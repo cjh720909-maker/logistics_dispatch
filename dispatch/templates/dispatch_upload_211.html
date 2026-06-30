@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="screen-box">
+
+    <h5>211 대상 업로드</h5>
+
+    <form method="post" action="/dispatch_upload_211" enctype="multipart/form-data" class="mb-3">
+        <div class="row g-2">
+            <div class="col-md-4">
+                <input type="file" name="excel_file" class="form-control" accept=".xlsx,.xlsm">
+            </div>
+
+            <div class="col-md-2">
+                <button class="btn btn-dark w-100">
+                    업로드 미리보기
+                </button>
+            </div>
+        </div>
+    </form>
+
+    {% if error_message %}
+    <div class="alert alert-danger">
+        {{ error_message }}
+    </div>
+    {% endif %}
+
+    {% if preview_result %}
+    <div class="mb-3">
+
+        {% if preview_result.validation.can_save %}
+        <div class="alert alert-success">
+            검증 완료: 저장 가능합니다.
+        </div>
+        {% else %}
+        <div class="alert alert-danger">
+            검증 실패: 신규 거래처, 거래처명 불일치, 신규 제품을 먼저 확인해야 합니다.
+        </div>
+        {% endif %}
+
+        {% if preview_result.validation.new_deliveries %}
+        <div class="alert alert-warning">
+            <strong>신규 거래처</strong>
+            <ul class="mb-0">
+                {% for code, name in preview_result.validation.new_deliveries.items() %}
+                <li>{{ code }} / {{ name }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if preview_result.validation.name_mismatches %}
+        <div class="alert alert-warning">
+            <strong>거래처명 불일치</strong>
+            <ul class="mb-0">
+                {% for code, item in preview_result.validation.name_mismatches.items() %}
+                <li>
+                    {{ code }} /
+                    엑셀: {{ item.excel_name }} /
+                    등록: {{ item.master_name }}
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        {% if preview_result.validation.new_products %}
+        <div class="alert alert-warning">
+            <strong>신규 제품</strong>
+            <ul class="mb-0">
+                {% for code, name in preview_result.validation.new_products.items() %}
+                <li>{{ code }} / {{ name }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+    </div>
+    <div class="mb-2">
+        전체 데이터: <strong>{{ preview_result.total_count }}</strong>건 /
+        미리보기: <strong>{{ preview_result.rows|length }}</strong>건 </div>
+
+    <div style="overflow-x:auto;">
+        <table class="table table-bordered table-sm dispatch-table">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>납품일</th>
+                    <th>납품처명</th>
+                    <th>납품처코드</th>
+                    <th>판매처명</th>
+                    <th>납품구분</th>
+                    <th>자재번호</th>
+                    <th>자재명</th>
+                    <th>단가</th>
+                    <th>부가세</th>
+                    <th>중량</th>
+                    <th>입수</th>
+                    <th>총량</th>
+                    <th>중량단위</th>
+                    <th>납품번호</th>
+                    <th>오더번호</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in preview_result.rows %} <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ row.delivery_date }}</td>
+                    <td>{{ row.delivery_name }}</td>
+                    <td>{{ row.delivery_code }}</td>
+                    <td>{{ row.seller_name }}</td>
+                    <td>{{ row.delivery_type }}</td>
+                    <td>{{ row.product_code }}</td>
+                    <td>{{ row.product_name }}</td>
+                    <td>{{ row.unit_price }}</td>
+                    <td>{{ row.vat_type }}</td>
+                    <td>{{ row.weight }}</td>
+                    <td>{{ row.ipsu }}</td>
+                    <td>{{ row.qty }}</td>
+                    <td>{{ row.weight_unit }}</td>
+                    <td>{{ row.nap_no }}</td>
+                    <td>{{ row.order_no }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

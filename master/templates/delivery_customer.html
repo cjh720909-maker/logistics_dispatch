@@ -19,42 +19,6 @@
 
             <input type="text" name="integrated" class="form-control" value="{{ filters.integrated }}"
                 placeholder="통합검색">
-            <div class="card mb-3">
-                <div class="card-header">
-                    가상 거래처 생성
-                </div>
-
-                <div class="card-body">
-                    <form method="post" action="/delivery_customer_120/create_virtual">
-                        <div class="row g-2">
-                            <div class="col-md-2">
-                                <label class="form-label">기존 거래처 코드</label>
-                                <input type="text" name="source_code" class="form-control form-control-sm" required>
-                            </div>
-
-                            <div class="col-md-3">
-                                <label class="form-label">새 거래처 코드</label>
-                                <input type="text" name="new_code" class="form-control form-control-sm" required>
-                            </div>
-
-                            <div class="col-md-3">
-                                <label class="form-label">새 거래처명</label>
-                                <input type="text" name="new_name" class="form-control form-control-sm" required>
-                            </div>
-
-                            <div class="col-md-2 d-flex align-items-end">
-                                <button class="btn btn-dark btn-sm w-100">
-                                    가상 거래처 생성
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="text-muted mt-2">
-                            기존 거래처의 주소, 전화번호, 기본 배차명, 메모를 복사하고 코드/이름만 새로 생성합니다.
-                        </div>
-                    </form>
-                </div>
-            </div>
             <button class="btn btn-dark">조회</button>
         </div>
 

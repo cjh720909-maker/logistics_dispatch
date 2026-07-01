@@ -2,7 +2,6 @@ from db import engine
 from utils.encoding import fix_row
 from db_local import local_engine
 
-
 def encode_kr(value):
     if not value:
         return value
@@ -280,138 +279,6 @@ def get_vehicle_driver_140_list(filters):
 
         return [dict(row) for row in result.mappings().all()]
 
-def create_product_name_rule_table():
-    with local_engine.begin() as conn:
-        conn.exec_driver_sql(
-            """
-            CREATE TABLE IF NOT EXISTS product_name_rule (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                before_name TEXT NOT NULL,
-                after_name TEXT NOT NULL,
-                memo TEXT,
-                is_active INTEGER DEFAULT 1,
-                created_at TEXT DEFAULT CURRENT_TIMESTAMP
-            )
-            """
-        )
-
-
-def get_product_name_rules():
-    create_product_name_rule_table()
-
-    with local_engine.connect() as conn:
-        result = conn.exec_driver_sql(
-            """
-            SELECT
-                id,
-                before_name,
-                after_name,
-                memo,
-                is_active,
-                created_at
-            FROM product_name_rule
-            ORDER BY id DESC
-            """
-        )
-
-        return [dict(row) for row in result.mappings().all()]
-
-
-def create_product_name_rule(before_name, after_name, memo):
-    create_product_name_rule_table()
-
-    if not before_name or not after_name:
-        return
-
-    with local_engine.begin() as conn:
-        conn.exec_driver_sql(
-            """
-            INSERT INTO product_name_rule (
-                before_name,
-                after_name,
-                memo
-            )
-            VALUES (?, ?, ?)
-            """,
-            (
-                before_name,
-                after_name,
-                memo,
-            )
-        )
-
-def create_upload_delivery_rule_table():
-    with local_engine.begin() as conn:
-        conn.exec_driver_sql(
-            """
-            CREATE TABLE IF NOT EXISTS upload_delivery_rule (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                before_code TEXT,
-                before_name TEXT,
-                base_category TEXT,
-                after_code TEXT,
-                after_name TEXT,
-                memo TEXT,
-                is_active INTEGER DEFAULT 1,
-                created_at TEXT DEFAULT CURRENT_TIMESTAMP
-            )
-            """
-        )
-
-
-def get_upload_delivery_rules():
-    create_upload_delivery_rule_table()
-
-    with local_engine.connect() as conn:
-        result = conn.exec_driver_sql(
-            """
-            SELECT
-                id,
-                rule_type,
-                before_code,
-                before_name,
-                base_category,
-                after_code,
-                after_name,
-                memo,
-                is_active,
-                created_at
-            FROM upload_delivery_rule
-            ORDER BY id DESC
-            """
-        )
-
-        return [dict(row) for row in result.mappings().all()]
-
-
-def create_upload_delivery_rule(rule_type, before_code, before_name, base_category, after_code, after_name, memo):
-    create_upload_delivery_rule_table()
-
-    with local_engine.begin() as conn:
-        conn.exec_driver_sql(
-            """
-            INSERT INTO upload_delivery_rule (
-                rule_type,
-                before_code,
-                before_name,
-                base_category,
-                after_code,
-                after_name,
-                memo
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                rule_type,
-                before_code,
-                before_name,
-                base_category,
-                after_code,
-                after_name,
-                memo,
-            )
-        )
-
 def create_virtual_delivery_from_existing(source_code, new_code, new_name):
     if not source_code or not new_code or not new_name:
         return {
@@ -516,98 +383,23 @@ def search_delivery_for_virtual(keyword):
 
         return [dict(row) for row in result.mappings().all()]
 
-def get_product_base_categories():
-    with local_engine.connect() as conn:
-        result = conn.exec_driver_sql(
-            """
-            SELECT DISTINCT
-                base_category
-            FROM product
-            WHERE base_category IS NOT NULL
-            AND base_category != ''
-            ORDER BY base_category
-            """
-        )
-
-        return [
-            row["base_category"]
-            for row in result.mappings().all()
-        ]    
-
-def create_upload_delivery_merge_rule_table():
-    with local_engine.begin() as conn:
-        conn.exec_driver_sql(
-            """
-            CREATE TABLE IF NOT EXISTS upload_delivery_merge_rule (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                group_name TEXT,
-                source_code TEXT,
-                source_name TEXT,
-                target_code TEXT,
-                target_name TEXT,
-                memo TEXT,
-                is_active INTEGER DEFAULT 1,
-                created_at TEXT DEFAULT CURRENT_TIMESTAMP
-            )
-            """
-        )
-
-
-def get_upload_delivery_merge_rules():
-    create_upload_delivery_merge_rule_table()
+def get_delivery_by_code(delivery_code):
+    if not delivery_code:
+        return None
 
     with local_engine.connect() as conn:
-        result = conn.exec_driver_sql(
+        row = conn.exec_driver_sql(
             """
             SELECT
-                id,
-                group_name,
-                source_code,
-                source_name,
-                target_code,
-                target_name,
-                memo,
-                is_active,
-                created_at
-            FROM upload_delivery_merge_rule
-            ORDER BY
-                target_name,
-                source_name
-            """
-        )
-
-        return [dict(row) for row in result.mappings().all()]
-
-
-def create_upload_delivery_merge_rule(
-    group_name,
-    source_code,
-    source_name,
-    target_code,
-    target_name,
-    memo
-):
-    create_upload_delivery_merge_rule_table()
-
-    with local_engine.begin() as conn:
-        conn.exec_driver_sql(
-            """
-            INSERT INTO upload_delivery_merge_rule (
-                group_name,
-                source_code,
-                source_name,
-                target_code,
-                target_name,
-                memo
-            )
-            VALUES (?, ?, ?, ?, ?, ?)
+                code,
+                name
+            FROM delivery
+            WHERE code = ?
             """,
-            (
-                group_name,
-                source_code,
-                source_name,
-                target_code,
-                target_name,
-                memo,
-            )
-        )
+            (delivery_code,)
+        ).mappings().first()
+
+    if not row:
+        return None
+
+    return dict(row)

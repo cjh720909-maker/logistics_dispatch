@@ -5,7 +5,7 @@
 
     <h5>121 가상 거래처 생성</h5>
 
-    <form method="get" action="/delivery_customer_120/virtual" class="row g-2 mb-3">
+    <form method="get" action="/delivery_customer_121/virtual" class="row g-2 mb-3">
         <div class="col-md-4">
             <label class="form-label">기존 거래처 검색</label>
             <input type="text" name="keyword" class="form-control form-control-sm" value="{{ keyword }}"
@@ -50,7 +50,7 @@
                 <td>{{ row.phone }}</td>
                 <td>{{ row.memo }}</td>
                 <td style="min-width: 280px;">
-                    <form method="post" action="/delivery_customer_120/virtual" class="d-flex gap-2">
+                    <form method="post" action="/delivery_customer_121/virtual" class="d-flex gap-2">
                         <input type="hidden" name="source_code" value="{{ row.code }}">
                         <input type="text" name="new_name" class="form-control form-control-sm" placeholder="새 거래처명"
                             required>

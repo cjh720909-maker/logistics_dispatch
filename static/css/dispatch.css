@@ -76,3 +76,62 @@ td {
 .selected-row td {
     background-color: yellow !important;
 }
+
+/* ===========================
+   292 업로드 자동변환 규칙
+=========================== */
+
+.rule-form-row {
+    display: grid;
+    grid-template-columns:
+        140px 260px 280px 140px 260px 180px 70px;
+
+    gap: 8px;
+    align-items: end;
+    margin-bottom: 10px;
+}
+
+.rule-form-row>div {
+    display: flex;
+    flex-direction: column;
+}
+
+.rule-form-row label {
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.rule-form-row input,
+.rule-form-row select {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.rule-form-row select[multiple] {
+    height: 34px;
+}
+
+.rule-form-row button {
+    height: 34px;
+}
+
+.page-title {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.page-title h5 {
+    margin: 0;
+}
+
+.title-help {
+    color: #666;
+    font-size: 12px;
+}
+
+.rule-form-row.merge-rule {
+    grid-template-columns:
+        160px 150px 300px 150px 300px 220px 70px;
+}

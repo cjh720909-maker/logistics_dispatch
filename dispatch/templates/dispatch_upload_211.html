@@ -15,6 +15,9 @@
                 <button class="btn btn-dark w-100">
                     업로드 미리보기
                 </button>
+                <button type="submit" name="action" value="convert">
+                    자동변환 확인
+                </button>
             </div>
         </div>
     </form>
@@ -84,6 +87,11 @@
         <table class="table table-bordered table-sm dispatch-table">
             <thead>
                 <tr>
+                    <th>292확인</th>
+                    <th>기초분류</th>
+                    <th>변경전 납품처</th>
+                    <th>적용규칙</th>
+                    <th>변경전 제품명</th>
                     <th>No</th>
                     <th>납품일</th>
                     <th>납품처명</th>
@@ -104,6 +112,18 @@
             </thead>
             <tbody>
                 {% for row in preview_result.rows %} <tr>
+                    <td>{{ row.delivery_split_rule_292_debug }}</td>
+                    <td>{{ row.base_category }}</td>
+                    <td>{{ row.delivery_name_before_292 }}</td>
+                    <td>
+                        {% if row.product_name_rule_291_applied %}
+                        적용
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+
+                    <td>{{ row.product_name_before_291 }}</td>
                     <td>{{ loop.index }}</td>
                     <td>{{ row.delivery_date }}</td>
                     <td>{{ row.delivery_name }}</td>

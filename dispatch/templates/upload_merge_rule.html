@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-title">
+    <h5>293 납품처 합치기 규칙</h5>
+
+    <small class="title-help">
+        여러 납품처를 하나의 대표 납품처로 합칩니다.
+    </small>
+</div>
+
+<form method="POST" class="rule-form-row merge-rule">
+    <div>
+        <label>그룹명</label>
+        <input type="text" name="group_name">
+    </div>
+
+    <div>
+        <label>변경전 코드</label>
+        <input type="text" name="source_code">
+    </div>
+
+    <div>
+        <label>변경전 납품처명</label>
+        <input type="text" name="source_name">
+    </div>
+
+    <div>
+        <label>변경후 코드</label>
+        <input type="text" name="target_code">
+    </div>
+
+    <div>
+        <label>변경후 납품처명</label>
+        <input type="text" name="target_name">
+    </div>
+
+    <div>
+        <label>메모</label>
+        <input type="text" name="memo">
+    </div>
+
+    <div>
+        <button type="submit">등록</button>
+    </div>
+</form>
+
+<p>등록건수: <b>{{ rows|length }}</b></p>
+
+<table class="table table-bordered table-sm dispatch-table">
+    <thead>
+        <tr>
+            <th>No</th>
+            <th>그룹명</th>
+            <th>변경전 코드</th>
+            <th>변경전 납품처명</th>
+            <th>변경후 코드</th>
+            <th>변경후 납품처명</th>
+            <th>메모</th>
+            <th>사용</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in rows %}
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ row.group_name }}</td>
+            <td>{{ row.source_code }}</td>
+            <td>{{ row.source_name }}</td>
+            <td>{{ row.target_code }}</td>
+            <td>{{ row.target_name }}</td>
+            <td>{{ row.memo }}</td>
+            <td>{{ row.is_active }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+
+{% endblock %}

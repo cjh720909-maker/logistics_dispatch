@@ -60,10 +60,10 @@ def preview_daesang_excel(file):
 
     return {
         "rows": rows[:20],
+        "all_rows": rows,
         "total_count": len(rows),
         "validation": validation,
     }
-
 
 def validate_daesang_rows(rows):
     delivery_codes = sorted({

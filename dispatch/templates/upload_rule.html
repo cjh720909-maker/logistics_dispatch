@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="screen-box">
+
+    <div class="page-title">
+        <h5>292 납품처 분리하기 규칙</h5>
+
+        <small class="title-help">
+            Ctrl 키를 누른 상태로 여러 분류를 선택할 수 있습니다.
+            전체 적용은 전체(*)만 선택하세요.
+        </small>
+    </div>
+    <form method="post" action="/rule_292" class="rule-form-row">
+        <div>
+            <label>변경전 코드</label>
+            <input type="text" name="before_code" id="before_code">
+        </div>
+
+        <div>
+            <label>변경전 납품처명</label>
+            <input type="text" name="before_name" id="before_name" readonly placeholder="코드 입력 시 자동 저장">
+        </div>
+
+        <div>
+            <label>기초분류</label>
+            <select name="base_category" multiple>
+                <option value="*">전체(*)</option>
+                {% for category in base_categories %}
+                <option value="{{ category }}">{{ category }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label>변경후 코드</label>
+            <input type="text" name="after_code" id="after_code">
+        </div>
+
+        <div>
+            <label>변경후 납품처명</label>
+            <input type="text" name="after_name" id="after_name" readonly placeholder="코드 입력 시 자동 저장">
+        </div>
+
+        <div>
+            <label>메모</label>
+            <input type="text" name="memo">
+        </div>
+
+        <div class="button-cell">
+            <button type="submit">등록</button>
+        </div>
+
+    </form>
+
+    <div class="mb-2">
+        등록건수: <strong>{{ rows|length }}</strong>
+    </div>
+
+    <table class="table table-bordered table-sm dispatch-table">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>변경전 코드</th>
+                <th>변경전 납품처명</th>
+                <th>기초분류</th>
+                <th>변경후 코드</th>
+                <th>변경후 납품처명</th>
+                <th>메모</th>
+                <th>사용</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ row.before_code }}</td>
+                <td>{{ row.before_name }}</td>
+                <td>{{ row.base_category }}</td>
+                <td>{{ row.after_code }}</td>
+                <td>{{ row.after_name }}</td>
+                <td>{{ row.memo }}</td>
+                <td>{% if row.is_active %}사용{% else %}미사용{% endif %}</td>
+                <td>
+                    <form method="POST" action="{{ url_for('dispatch.rule_292_delete') }}"
+                        onsubmit="return confirm('이 규칙을 삭제하시겠습니까?');">
+                        <input type="hidden" name="rule_id" value="{{ row.id }}">
+                        <button type="submit">삭제</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+<script>
+    function bindDeliveryCodeLookup(codeInputId, nameInputId) {
+        const codeInput = document.getElementById(codeInputId);
+        const nameInput = document.getElementById(nameInputId);
+
+        if (!codeInput || !nameInput) return;
+
+        async function lookup() {
+            const code = codeInput.value.trim();
+
+            if (!code) {
+                nameInput.value = "";
+                return;
+            }
+
+            const response = await fetch(`/api/delivery_by_code?code=${encodeURIComponent(code)}`);
+            const data = await response.json();
+
+            if (data.success) {
+                nameInput.value = data.name;
+            } else {
+                nameInput.value = "납품처 없음";
+            }
+        }
+
+        codeInput.addEventListener("change", lookup);
+
+        codeInput.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                lookup();
+            }
+        });
+    }
+
+    bindDeliveryCodeLookup("before_code", "before_name");
+    bindDeliveryCodeLookup("after_code", "after_name");
+</script>
+{% endblock %}

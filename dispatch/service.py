@@ -940,3 +940,323 @@ def get_storage_list():
 
         return [dict(row) for row in result.mappings().all()]
 
+def create_product_name_rule_table():
+    with local_engine.begin() as conn:
+        conn.exec_driver_sql(
+            """
+            CREATE TABLE IF NOT EXISTS product_name_rule (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                before_name TEXT NOT NULL,
+                after_name TEXT NOT NULL,
+                memo TEXT,
+                is_active INTEGER DEFAULT 1,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+
+
+def get_product_name_rules():
+    create_product_name_rule_table()
+
+    with local_engine.connect() as conn:
+        result = conn.exec_driver_sql(
+            """
+            SELECT
+                id,
+                before_name,
+                after_name,
+                memo,
+                is_active,
+                created_at
+            FROM product_name_rule
+            ORDER BY id DESC
+            """
+        )
+
+        return [dict(row) for row in result.mappings().all()]
+
+
+def create_product_name_rule(before_name, after_name, memo):
+    create_product_name_rule_table()
+
+    if not before_name or not after_name:
+        return
+
+    with local_engine.begin() as conn:
+        conn.exec_driver_sql(
+            """
+            INSERT INTO product_name_rule (
+                before_name,
+                after_name,
+                memo
+            )
+            VALUES (?, ?, ?)
+            """,
+            (
+                before_name,
+                after_name,
+                memo,
+            )
+        )
+
+def create_upload_delivery_rule_table():
+    with local_engine.begin() as conn:
+        conn.exec_driver_sql(
+            """
+            CREATE TABLE IF NOT EXISTS upload_delivery_rule (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                before_code TEXT,
+                before_name TEXT,
+                base_category TEXT,
+                after_code TEXT,
+                after_name TEXT,
+                memo TEXT,
+                is_active INTEGER DEFAULT 1,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+
+        columns = conn.exec_driver_sql(
+            "PRAGMA table_info(upload_delivery_rule)"
+        ).mappings().all()
+
+        column_names = [row["name"] for row in columns]
+
+        if "rule_type" in column_names:
+            conn.exec_driver_sql(
+                """
+                CREATE TABLE upload_delivery_rule_new (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    before_code TEXT,
+                    before_name TEXT,
+                    base_category TEXT,
+                    after_code TEXT,
+                    after_name TEXT,
+                    memo TEXT,
+                    is_active INTEGER DEFAULT 1,
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+                )
+                """
+            )
+
+            conn.exec_driver_sql(
+                """
+                INSERT INTO upload_delivery_rule_new (
+                    id,
+                    before_code,
+                    before_name,
+                    base_category,
+                    after_code,
+                    after_name,
+                    memo,
+                    is_active,
+                    created_at
+                )
+                SELECT
+                    id,
+                    before_code,
+                    before_name,
+                    base_category,
+                    after_code,
+                    after_name,
+                    memo,
+                    is_active,
+                    created_at
+                FROM upload_delivery_rule
+                """
+            )
+
+            conn.exec_driver_sql("DROP TABLE upload_delivery_rule")
+            conn.exec_driver_sql(
+                "ALTER TABLE upload_delivery_rule_new RENAME TO upload_delivery_rule"
+            )
+
+def get_upload_delivery_rules():
+    create_upload_delivery_rule_table()
+
+    with local_engine.connect() as conn:
+        result = conn.exec_driver_sql(
+            """
+            SELECT
+                id,
+                before_code,
+                before_name,
+                base_category,
+                after_code,
+                after_name,
+                memo,
+                is_active,
+                created_at
+            FROM upload_delivery_rule
+            ORDER BY id DESC
+            """
+        )
+
+        return [dict(row) for row in result.mappings().all()]
+
+
+def create_upload_delivery_rule(
+    before_code,
+    base_category,
+    after_code,
+    memo
+):
+    create_upload_delivery_rule_table()
+
+    before_name = get_delivery_name_by_code(before_code)
+    after_name = get_delivery_name_by_code(after_code)
+
+    with local_engine.begin() as conn:
+        conn.exec_driver_sql(
+            """
+            INSERT INTO upload_delivery_rule (
+                before_code,
+                before_name,
+                base_category,
+                after_code,
+                after_name,
+                memo
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                before_code,
+                before_name,
+                base_category,
+                after_code,
+                after_name,
+                memo,
+            )
+        )
+
+def get_product_base_categories():
+    with local_engine.connect() as conn:
+        result = conn.exec_driver_sql(
+            """
+            SELECT DISTINCT
+                base_category
+            FROM product
+            WHERE base_category IS NOT NULL
+            AND base_category != ''
+            ORDER BY base_category
+            """
+        )
+
+        return [
+            row["base_category"]
+            for row in result.mappings().all()
+        ]    
+
+def create_upload_delivery_merge_rule_table():
+    with local_engine.begin() as conn:
+        conn.exec_driver_sql(
+            """
+            CREATE TABLE IF NOT EXISTS upload_delivery_merge_rule (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                group_name TEXT,
+                source_code TEXT,
+                source_name TEXT,
+                target_code TEXT,
+                target_name TEXT,
+                memo TEXT,
+                is_active INTEGER DEFAULT 1,
+                created_at TEXT DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+
+
+def get_upload_delivery_merge_rules():
+    create_upload_delivery_merge_rule_table()
+
+    with local_engine.connect() as conn:
+        result = conn.exec_driver_sql(
+            """
+            SELECT
+                id,
+                group_name,
+                source_code,
+                source_name,
+                target_code,
+                target_name,
+                memo,
+                is_active,
+                created_at
+            FROM upload_delivery_merge_rule
+            ORDER BY
+                target_name,
+                source_name
+            """
+        )
+
+        return [dict(row) for row in result.mappings().all()]
+
+
+def create_upload_delivery_merge_rule(
+    group_name,
+    source_code,
+    source_name,
+    target_code,
+    target_name,
+    memo
+):
+    create_upload_delivery_merge_rule_table()
+
+    with local_engine.begin() as conn:
+        conn.exec_driver_sql(
+            """
+            INSERT INTO upload_delivery_merge_rule (
+                group_name,
+                source_code,
+                source_name,
+                target_code,
+                target_name,
+                memo
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (
+                group_name,
+                source_code,
+                source_name,
+                target_code,
+                target_name,
+                memo,
+            )
+        )
+
+def get_delivery_name_by_code(delivery_code):
+    if not delivery_code:
+        return ""
+
+    with local_engine.connect() as conn:
+        row = conn.exec_driver_sql(
+            """
+            SELECT name
+            FROM delivery
+            WHERE code = ?
+            """,
+            (delivery_code,)
+        ).mappings().first()
+
+    if not row:
+        return ""
+
+    return row["name"]
+
+def delete_upload_delivery_rule(rule_id):
+    if not rule_id:
+        return 0
+
+    with local_engine.begin() as conn:
+        result = conn.exec_driver_sql(
+            """
+            DELETE FROM upload_delivery_rule
+            WHERE id = ?
+            """,
+            (rule_id,)
+        )
+
+    return result.rowcount

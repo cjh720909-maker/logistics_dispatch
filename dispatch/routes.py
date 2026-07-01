@@ -23,6 +23,18 @@ from dispatch.service import(
     apply_storage_orders,
     get_storage_list,
     apply_product_name_rule,
+    get_product_name_rules,
+    get_upload_delivery_rules,
+    create_upload_delivery_rule,
+    get_product_base_categories,
+    get_upload_delivery_merge_rules,
+    create_upload_delivery_merge_rule,
+    delete_upload_delivery_rule,
+    create_product_name_rule,
+    )
+
+from dispatch.rules import (
+    apply_dispatch_upload_rules,
     )
 
 dispatch_bp = Blueprint(
@@ -281,6 +293,7 @@ def dispatch_upload_211():
     error_message = ""
 
     if request.method == "POST":
+        action = request.form.get("action", "preview")
         file = request.files.get("excel_file")
 
         if not file:
@@ -288,6 +301,15 @@ def dispatch_upload_211():
         else:
             try:
                 preview_result = preview_daesang_excel(file)
+
+                if action == "convert":
+                    converted_rows = apply_dispatch_upload_rules(
+                        preview_result["all_rows"]
+                    )
+
+                    preview_result["all_rows"] = converted_rows
+                    preview_result["rows"] = converted_rows[:20]
+
             except Exception as e:
                 error_message = str(e)
 
@@ -297,3 +319,86 @@ def dispatch_upload_211():
         error_message=error_message,
     )
 
+@dispatch_bp.route("/rule_290")
+def rule_290():
+    return render_template("rule_290.html")
+
+@dispatch_bp.route("/rule_291", methods=["GET", "POST"])
+def rule_291():
+    if request.method == "POST":
+        before_name = request.form.get("before_name")
+        after_name = request.form.get("after_name")
+        memo = request.form.get("memo")
+
+        create_product_name_rule(
+            before_name,
+            after_name,
+            memo
+        )
+
+        return redirect(
+            url_for("dispatch.rule_291")
+        )
+
+    rows = get_product_name_rules()
+
+    return render_template(
+        "rule.html",
+        rows=rows,
+    )
+
+@dispatch_bp.route("/rule_292", methods=["GET", "POST"])
+def rule_292():
+    if request.method == "POST":
+        create_upload_delivery_rule(
+            request.form.get("before_code"),
+            ",".join(request.form.getlist("base_category")),
+            request.form.get("after_code"),
+            request.form.get("memo"),
+        )
+
+        return redirect(
+            url_for("dispatch.rule_292")
+        )
+
+    rows = get_upload_delivery_rules()
+    base_categories = get_product_base_categories()
+
+    return render_template(
+        "upload_rule.html",
+        rows=rows,
+        base_categories=base_categories,
+    )
+
+@dispatch_bp.route("/rule_293", methods=["GET", "POST"])
+def rule_293():
+    if request.method == "POST":
+        create_upload_delivery_merge_rule(
+            request.form.get("group_name"),
+            request.form.get("source_code"),
+            request.form.get("source_name"),
+            request.form.get("target_code"),
+            request.form.get("target_name"),
+            request.form.get("memo"),
+        )
+
+        return redirect(
+            url_for("dispatch.rule_293")
+        )
+
+    rows = get_upload_delivery_merge_rules()
+
+    return render_template(
+        "upload_merge_rule.html",
+        rows=rows,
+    )    
+
+@dispatch_bp.route("/rule_292/delete", methods=["POST"])
+def rule_292_delete():
+    rule_id = request.form.get("rule_id")
+
+    delete_upload_delivery_rule(rule_id)
+
+    return redirect(
+        url_for("dispatch.rule_292")
+    )
